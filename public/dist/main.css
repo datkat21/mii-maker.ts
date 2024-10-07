@@ -1,0 +1,89 @@
+html,
+body {
+  background-color: white;
+  color: #000;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.ui-base {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-areas: "mii tabList" "mii tabContent";
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  padding: 1rem;
+  grid-gap: 1rem;
+  --eye-color: #6c7070;
+}
+@media screen and (max-width: 1100px) {
+  .ui-base {
+    grid-template-areas: "mii" "tabList" "tabContent";
+    grid-template-columns: auto;
+    grid-template-rows: 1fr auto auto;
+  }
+  .ui-base .tab-list {
+    gap: 0.5rem;
+  }
+  .ui-base .tab-list .tab {
+    padding: 8px;
+    min-width: 64px;
+    min-height: 64px;
+    width: auto !important;
+    height: auto !important;
+  }
+  .ui-base .tab-content {
+    max-height: 30vmax;
+  }
+}
+.ui-base > div {
+  border-radius: 8px;
+  overflow: auto;
+}
+.ui-base .mii-holder {
+  grid-area: mii;
+  background-color: #ddd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.ui-base .mii-holder canvas {
+  width: 100%;
+  height: 100%;
+}
+.ui-base .tab-list {
+  display: flex;
+  grid-area: tabList;
+  background-color: #eee;
+}
+.ui-base .tab-list .tab {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+.ui-base .tab-list .tab:hover {
+  background-color: #ddd;
+}
+.ui-base .tab-content {
+  grid-area: tabContent;
+  background-color: #ececec;
+}
+.ui-base .tab-content .feature-set-group {
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ui-base .tab-content .feature-set-group .feature-item {
+  width: 52px;
+  height: 52px;
+}

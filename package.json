@@ -1,0 +1,32 @@
+{
+  "name": "mii-maker-real",
+  "module": "build.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@binary-files/structjs": "^1.2.3",
+    "@datkat21/html": "^1.2.0",
+    "@types/assert": "^1.5.10",
+    "@types/c-struct": "^0.0.3",
+    "@types/gsap": "^3.0.0",
+    "@types/jbinary": "^2.1.4",
+    "@types/three": "^0.169.0",
+    "@types/xml2js": "^0.4.14",
+    "assert": "^2.1.0",
+    "bit-buffer": "^0.2.5",
+    "buffer": "^6.0.3",
+    "c-struct": "^0.0.5",
+    "crc": "^4.3.2",
+    "fast-xml-parser": "^4.5.0",
+    "gsap": "^3.12.5",
+    "jbinary": "^2.1.5",
+    "sass": "^1.79.4",
+    "three": "^0.169.0",
+    "xml2js": "^0.6.2"
+  }
+}
