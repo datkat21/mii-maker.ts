@@ -1,4 +1,5 @@
-import crypto from "crypto";
+// import crypto from "crypto";
+import MD5 from "md5";
 // import assert from "assert";
 import ExtendedBitStream from "./extendedBitStream";
 import Util from "./util";
@@ -1022,11 +1023,7 @@ export default class Mii {
   public studioAssetUrl(assetPath: string): string {
     this.validate();
 
-    const assetPathHash = crypto
-      .createHash("md5")
-      .update(assetPath)
-      .digest("hex")
-      .toString();
+    const assetPathHash = MD5(assetPath);
     const char0 = assetPathHash[0];
     const char1 = assetPathHash[1];
     const char2 = assetPathHash[2];

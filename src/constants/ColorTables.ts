@@ -24,3 +24,21 @@ export const MiiFavoriteColorLookupTable: Record<number, number> = {
   /** Black */
   11: 0x181814,
 };
+
+export const MiiSkinColorTable: Record<number, string> = {
+  0: "#FFD3AD",
+  1: "#FEB66B",
+  2: "#DE7942",
+  3: "#FFAA8C",
+  4: "#AD5129",
+  5: "#632C18",
+};
+
+export const MiiEyeColorTable: Record<number, string> = {
+  0: "#000000",
+  1: "#717372",
+  2: "#663C2C",
+  3: "#686537",
+  4: "#4B58A8",
+  5: "#387059",
+};

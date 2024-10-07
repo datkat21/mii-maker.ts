@@ -3,15 +3,28 @@ import { Buffer } from "../../node_modules/buffer/index";
 import Html from "@datkat21/html";
 import { TabList } from "../ui/components/TabList";
 import EditorTabIcons from "../constants/EditorTabIcons";
-import { CameraFocusPart, Mii3DScene } from "./3DScene";
+import { CameraPosition, Mii3DScene } from "./3DScene";
 import { EyeTab } from "../ui/tabs/Eye";
+import { HeadTab } from "../ui/tabs/Head";
+import type { TabBase, TabRenderInit } from "../constants/TabRenderType";
+import { EmptyTab } from "../ui/tabs/Empty";
+import { MiscTab } from "../ui/tabs/Misc";
 
 export enum MiiGender {
   Male,
   Female,
 }
 export type IconSet = {
+  face: string[];
+  makeup: string[];
+  wrinkles: string[];
+  eyebrows: string[];
   eyes: string[];
+  nose: string[];
+  mouth: string[];
+  facialHair: string[];
+  mole: string[];
+  glasses: string[];
 };
 
 export class MiiEditor {
@@ -35,8 +48,9 @@ export class MiiEditor {
         // "AwAAQIBhWERghMCA3W5Cj5VIdIKFVAAAamBUAHkAbABlAHIAAAAAAAAAAAAAAF5DIAB5AUJoRBggREUUgRITaA0AACkAUkhQVAB5AGwAZQByAAAAAAAAAAAAAAAAAI3d";
         "AwCSMNjV7opqF2hGnVxmK8z7ZRITiAAAlGJBAHUAcwB0AGkAbgAGJrIAuQAAAFNAAAA+ByBnRBjzQmUUbRQTZg0AACkAUkclAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIpM";
     } else if (gender === MiiGender.Female) {
+      // chacha12_1101
       initString =
-        "AwEAAAAAAAAAAAAAgD77GgAAAAAAAAAAAQBNAGkAaQAAAAAAAAAAAAAAAAAAAEBAAAAMAQRoQxggNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAADzW";
+        "AwAFMG0rAiKJRLe1nDWwN5i26X5uuAAAY0FjAGgAYQByAGwAaQBuAGUAAAAAAEwmApBlBttoRBggNEYUgRITYg0AACkAUkhQYwBoAGEAcgBsAGkAbgBlAAAAAAAAAHLb";
     }
     this.mii = new Mii(Buffer.from(initString, "base64") as unknown as Buffer);
 
@@ -66,86 +80,66 @@ export class MiiEditor {
     });
   }
   #setupTabs() {
+    const TabInit = (Tab: TabBase, CameraFocusPart: CameraPosition) => {
+      return async (content: Html) => {
+        this.ui.scene.focusCamera(CameraFocusPart);
+        await Tab({
+          container: content,
+          callback: (mii) => {
+            this.mii = mii;
+            this.render();
+          },
+          icons: this.icons,
+          mii: this.mii,
+        });
+        this.ui.scene.resize();
+      };
+    };
+
     const tabs = TabList([
       {
         icon: EditorTabIcons.head,
-        select: (content) => {
-          content.text("Unfinished");
-          this.ui.scene.focusCamera(CameraFocusPart.MiiFullBody);
-        },
+        select: TabInit(HeadTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorTabIcons.hair,
-        select: (content) => {
-          content.text("Unfinished");
-          this.ui.scene.focusCamera(CameraFocusPart.MiiFullBody);
-        },
+        select: TabInit(EmptyTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorTabIcons.eyebrows,
-        select: (content) => {
-          content.text("Unfinished");
-          this.ui.scene.focusCamera(CameraFocusPart.MiiFullBody);
-        },
+        select: TabInit(EmptyTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorTabIcons.eyes,
-        select: (content) => {
-          this.ui.scene.focusCamera(CameraFocusPart.MiiHead);
-          EyeTab(content, this.mii, this.icons, (mii) => {
-            this.mii = mii;
-            this.render();
-          });
-        },
+        select: TabInit(EyeTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorTabIcons.nose,
-        select: (content) => {
-          content.text("Unfinished");
-          this.ui.scene.focusCamera(CameraFocusPart.MiiFullBody);
-        },
+        select: TabInit(EmptyTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorTabIcons.mouth,
-        select: (content) => {
-          content.text("Unfinished");
-          this.ui.scene.focusCamera(CameraFocusPart.MiiFullBody);
-        },
+        select: TabInit(EmptyTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorTabIcons.facialHair,
-        select: (content) => {
-          content.text("Unfinished");
-          this.ui.scene.focusCamera(CameraFocusPart.MiiFullBody);
-        },
+        select: TabInit(EmptyTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorTabIcons.mole,
-        select: (content) => {
-          content.text("Unfinished");
-          this.ui.scene.focusCamera(CameraFocusPart.MiiFullBody);
-        },
+        select: TabInit(EmptyTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorTabIcons.build,
-        select: (content) => {
-          content.text("Unfinished");
-          this.ui.scene.focusCamera(CameraFocusPart.MiiFullBody);
-        },
+        select: TabInit(EmptyTab, CameraPosition.MiiFullBody),
       },
       {
         icon: EditorTabIcons.favoriteColor,
-        select: (content) => {
-          content.text("Unfinished");
-          this.ui.scene.focusCamera(CameraFocusPart.MiiFullBody);
-        },
+        select: TabInit(EmptyTab, CameraPosition.MiiFullBody),
       },
       {
         icon: EditorTabIcons.details,
-        select: (content) => {
-          content.text("Unfinished");
-          this.ui.scene.focusCamera(CameraFocusPart.MiiFullBody);
-        },
+        select: TabInit(MiscTab, CameraPosition.MiiFullBody),
       },
     ]);
     this.ui.tabList = tabs.list;

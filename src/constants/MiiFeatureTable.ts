@@ -11,6 +11,8 @@ export const MiiEyeTable: Record<number, number> = {
   6: 29,
   7: 36,
   8: 3,
+  9: 16,
+  10: 45,
 };
 
 export function rearrangeArray(

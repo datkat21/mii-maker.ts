@@ -6,16 +6,16 @@ import { join } from "path";
 const svgsList = await readdir("./svg");
 
 let categories = [
-  "ears",
-  "tail",
-  "body",
-  "hat",
-  "features",
+  "face",
+  "makeup",
+  "wrinkles",
+  "eyebrows",
   "eyes",
-  "lips",
-  "arms",
-  "legs",
-  "accessory",
+  "nose",
+  "mouth",
+  "facialHair",
+  "mole",
+  "glasses",
 ];
 
 let json: { [key: string]: string[] } = {};
@@ -26,7 +26,19 @@ function parseSvg(svg: string): string {
     // .replace(/<path[^>]*stroke="#737373"[^>]*>/g, "")
     // Replace fill="#6C7070" with stroke="var(--ktat-hat)"
     .replace(/fill="#6C7070"/g, 'fill="var(--eye-color)"')
-    // Remove lines with <rect/>;
+    // .replace(/"/g, 'fill="var(--icon-face-stroke')
+    .replace(
+      /fill="white" stroke="#6F6F6F"/g,
+      'fill="var(--icon-face-fill)" stroke="var(--icon-face-stroke)"'
+    )
+    .replace(
+      /fill="white" stroke="#999999"/g,
+      'fill="var(--icon-head-fill)" stroke="var(--icon-head-stroke)"'
+    )
+    .replace(/fill="#8D8D8D"/g, 'fill="var(--icon-face-detail)"')
+    // .replace(/fill="#FFBABA"/g, 'fill="var(--icon-makeup)"')
+    .replace(/#996D54/g, "var(--icon-face-wrinkles)")
+    // Remove lnes with <rect/>;
     .replace(/<rect[^>]*\/>/g, "");
   return svg;
 }

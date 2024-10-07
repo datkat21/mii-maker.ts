@@ -10,8 +10,12 @@ declare global {
   interface Window {
     mii: Mii;
     editor: MiiEditor;
+    buffer: Buf;
   }
 }
+
+//@ts-expect-error classington
+window.buffer = Buf;
 
 // const RenderRequest = new DataView(new Uint8Array());
 

@@ -15,6 +15,7 @@
     "@types/c-struct": "^0.0.3",
     "@types/gsap": "^3.0.0",
     "@types/jbinary": "^2.1.4",
+    "@types/md5": "^2.3.5",
     "@types/three": "^0.169.0",
     "@types/xml2js": "^0.4.14",
     "assert": "^2.1.0",
@@ -26,6 +27,7 @@
     "fast-xml-parser": "^4.5.0",
     "gsap": "^3.12.5",
     "jbinary": "^2.1.5",
+    "md5": "^2.3.0",
     "sass": "^1.79.4",
     "three": "^0.169.0",
     "xml2js": "^0.6.2"

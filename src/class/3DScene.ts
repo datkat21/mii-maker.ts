@@ -2,10 +2,9 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import CameraControls from "camera-controls";
 import type Mii from "../external/mii-js/mii";
-import { MiiFavoriteColorLookupTable } from "../constants/FavoriteColorTable";
-import gsap from "gsap";
+import { MiiFavoriteColorLookupTable } from "../constants/ColorTables";
 
-export enum CameraFocusPart {
+export enum CameraPosition {
   MiiHead,
   MiiFullBody,
 }
@@ -68,6 +67,7 @@ export class Mii3DScene {
 
     this.#renderer = new THREE.WebGLRenderer({ antialias: true });
     this.#renderer.setSize(512, 512);
+    // this.#renderer.setPixelRatio(window.devicePixelRatio * 0.1);
 
     CameraControls.install({ THREE });
 
@@ -75,12 +75,18 @@ export class Mii3DScene {
       this.#camera,
       this.#renderer.domElement
     );
+    this.#controls.mouseButtons.left = CameraControls.ACTION.ROTATE;
+    this.#controls.mouseButtons.right = CameraControls.ACTION.NONE;
+    this.#controls.mouseButtons.wheel = CameraControls.ACTION.DOLLY;
+    this.#controls.minDistance = 15;
+    this.#controls.maxDistance = 35;
+
     // this.#controls.maxTargetRadius = 10;
     // this.#controls.enableDamping = true;
     // this.#controls.enablePan = false;
     // this.#controls.enableZoom = false;
 
-    this.animators.set("orbitControls", (time, delta) => {
+    this.animators.set("cameraControls", (time, delta) => {
       this.#controls.update(delta);
     });
 
@@ -97,6 +103,13 @@ export class Mii3DScene {
       this.animators.forEach((f) => f(time, delta));
       // const timeChange = time % 4;
 
+      // TODO: nice background :D
+      // this.#scene.backgroundRotation.set(
+      //   0,
+      //   (time / 1000) * 0.01 * Math.PI,
+      //   (time / 1000) * 0.01 * Math.PI
+      // );
+
       // if (this.mixer) {
       //   this.mixer.update(time * 1000);
       // }
@@ -109,30 +122,17 @@ export class Mii3DScene {
     this.#camera.updateProjectionMatrix();
     this.#renderer.setSize(this.#parent.offsetWidth, this.#parent.offsetHeight);
   }
-  focusCamera(part: CameraFocusPart) {
-    // this.#controls.enableRotate = false;
+  focusCamera(part: CameraPosition) {
+    this.#controls.smoothTime = 0.2;
 
-    if (part === CameraFocusPart.MiiFullBody) {
-      // this.#controls.target.set(0, 0, 0);
-      // gsap.to(this.#camera.position, {
-      //   y: 0,
-      //   z: 25,
-      //   duration: 0.5,
-      //   ease: "circ.out",
-      // });
-    } else if (part === CameraFocusPart.MiiHead) {
-      // this.#controls.target.set(0, 9, 15);
-      // gsap.to(this.#camera.position, {
-      //   y: 9,
-      //   z: 15,
-      //   duration: 0.5,
-      //   ease: "sine",
-      // });
+    if (part === CameraPosition.MiiFullBody) {
+      this.#controls.moveTo(0, 0, 0, true);
+      this.#controls.rotateTo(0, Math.PI / 2, true);
+      this.#controls.zoomTo(1.5, true);
+    } else if (part === CameraPosition.MiiHead) {
+      this.#controls.moveTo(0, 3.5, 0, true);
+      this.#controls.zoomTo(1.8, true);
     }
-    setTimeout(() => {
-      // this.#controls.enableRotate = true;
-    }, 500);
-    // this.animators.set("lerp", () => {});
   }
   resize() {
     this.#camera.aspect = this.#parent.offsetWidth / this.#parent.offsetHeight;
@@ -186,6 +186,15 @@ export class Mii3DScene {
     await setupGlb("./miiBodyM.glb", "m");
     await setupGlb("./miiBodyF.glb", "f");
   }
+  // getPantsColor() {
+  //   if (this.mii.normalMii === false) {
+  //     return 0xffff66;
+  //   }
+  //   if (this.mii.favorite) {
+  //     return 0xff6666;
+  //   }
+  //   return 0x666666;
+  // }
   async #updateBody() {
     if (!this.ready) return;
 
@@ -205,6 +214,12 @@ export class Mii3DScene {
         (mBody.material as THREE.MeshStandardMaterial).color.set(
           MiiFavoriteColorLookupTable[this.mii.favoriteColor]
         );
+        // const mLegs = bodyM
+        //   .getObjectByName("m")!
+        //   .getObjectByName("legs_m")! as THREE.Mesh;
+        // (mLegs.material as THREE.MeshStandardMaterial).color.set(
+        //   this.getPantsColor()
+        // );
         break;
       // f
       case 1:
@@ -216,6 +231,12 @@ export class Mii3DScene {
         (fBody.material as THREE.MeshStandardMaterial).color.set(
           MiiFavoriteColorLookupTable[this.mii.favoriteColor]
         );
+        // const fLegs = bodyF
+        //   .getObjectByName("f")!
+        //   .getObjectByName("legs_f")! as THREE.Mesh;
+        // (fLegs.material as THREE.MeshStandardMaterial).color.set(
+        //   this.getPantsColor()
+        // );
         break;
     }
   }
