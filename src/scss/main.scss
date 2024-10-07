@@ -43,10 +43,13 @@ body {
       max-height: 30vmax;
     }
   }
-  padding: 1rem;
-  grid-gap: 1rem;
 
-  --eye-color: #6c7070;
+  & {
+    padding: 1rem;
+    grid-gap: 1rem;
+
+    --eye-color: #6c7070;
+  }
 
   > div {
     border-radius: 8px;

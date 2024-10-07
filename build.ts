@@ -12,6 +12,9 @@ export async function compile(
   return await Bun.build({
     entrypoints: [filePath],
     outdir: outputDir,
+    splitting: true,
+    emitDCEAnnotations: true,
+    sourcemap: "linked",
     minify: {
       identifiers: true,
       syntax: true,

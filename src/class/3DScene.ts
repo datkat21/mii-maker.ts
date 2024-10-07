@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import CameraControls from "camera-controls";
 import type Mii from "../external/mii-js/mii";
 import { MiiFavoriteColorLookupTable } from "../constants/FavoriteColorTable";
 import gsap from "gsap";
@@ -12,7 +12,7 @@ export enum CameraFocusPart {
 
 export class Mii3DScene {
   #camera: THREE.PerspectiveCamera;
-  #controls: OrbitControls;
+  #controls: CameraControls;
   #loader: GLTFLoader;
   #scene: THREE.Scene;
   #renderer: THREE.WebGLRenderer;
@@ -69,11 +69,16 @@ export class Mii3DScene {
     this.#renderer = new THREE.WebGLRenderer({ antialias: true });
     this.#renderer.setSize(512, 512);
 
-    this.#controls = new OrbitControls(this.#camera, this.#renderer.domElement);
+    CameraControls.install({ THREE });
+
+    this.#controls = new CameraControls(
+      this.#camera,
+      this.#renderer.domElement
+    );
     // this.#controls.maxTargetRadius = 10;
-    this.#controls.enableDamping = true;
-    this.#controls.enablePan = false;
-    this.#controls.enableZoom = false;
+    // this.#controls.enableDamping = true;
+    // this.#controls.enablePan = false;
+    // this.#controls.enableZoom = false;
 
     this.animators.set("orbitControls", (time, delta) => {
       this.#controls.update(delta);
@@ -105,25 +110,27 @@ export class Mii3DScene {
     this.#renderer.setSize(this.#parent.offsetWidth, this.#parent.offsetHeight);
   }
   focusCamera(part: CameraFocusPart) {
-    this.#controls.enableRotate = false;
+    // this.#controls.enableRotate = false;
 
     if (part === CameraFocusPart.MiiFullBody) {
-      gsap.to(this.#camera.position, {
-        y: 0,
-        z: 25,
-        duration: 0.5,
-        ease: "circ.out",
-      });
+      // this.#controls.target.set(0, 0, 0);
+      // gsap.to(this.#camera.position, {
+      //   y: 0,
+      //   z: 25,
+      //   duration: 0.5,
+      //   ease: "circ.out",
+      // });
     } else if (part === CameraFocusPart.MiiHead) {
-      gsap.to(this.#camera.position, {
-        y: 9,
-        z: 15,
-        duration: 0.5,
-        ease: "sine",
-      });
+      // this.#controls.target.set(0, 9, 15);
+      // gsap.to(this.#camera.position, {
+      //   y: 9,
+      //   z: 15,
+      //   duration: 0.5,
+      //   ease: "sine",
+      // });
     }
     setTimeout(() => {
-      this.#controls.enableRotate = true;
+      // this.#controls.enableRotate = true;
     }, 500);
     // this.animators.set("lerp", () => {});
   }

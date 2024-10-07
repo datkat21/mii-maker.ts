@@ -21,6 +21,7 @@
     "bit-buffer": "^0.2.5",
     "buffer": "^6.0.3",
     "c-struct": "^0.0.5",
+    "camera-controls": "^2.9.0",
     "crc": "^4.3.2",
     "fast-xml-parser": "^4.5.0",
     "gsap": "^3.12.5",

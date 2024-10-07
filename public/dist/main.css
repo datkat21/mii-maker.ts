@@ -20,9 +20,6 @@ body {
   grid-template-areas: "mii tabList" "mii tabContent";
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto 1fr;
-  padding: 1rem;
-  grid-gap: 1rem;
-  --eye-color: #6c7070;
 }
 @media screen and (max-width: 1100px) {
   .ui-base {
@@ -43,6 +40,11 @@ body {
   .ui-base .tab-content {
     max-height: 30vmax;
   }
+}
+.ui-base {
+  padding: 1rem;
+  grid-gap: 1rem;
+  --eye-color: #6c7070;
 }
 .ui-base > div {
   border-radius: 8px;
