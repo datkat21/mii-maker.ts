@@ -38,6 +38,11 @@ function parseSvg(svg: string): string {
     .replace(/fill="#8D8D8D"/g, 'fill="var(--icon-face-detail)"')
     // .replace(/fill="#FFBABA"/g, 'fill="var(--icon-makeup)"')
     .replace(/#996D54/g, "var(--icon-face-wrinkles)")
+    .replace(/#FF5F5F/g, "currentColor")
+    .replace(/#0055FF/g, "var(--icon-mouth-tooth)")
+    .replace(/#712A04/g, "var(--icon-lip-color-top)")
+    .replace(/#BE4E26/g, "var(--icon-lip-color-bottom)")
+    // .replace(/#0055FF/g, "var(--icon-mouth-tooth)")
     // Remove lnes with <rect/>;
     .replace(/<rect[^>]*\/>/g, "");
   return svg;

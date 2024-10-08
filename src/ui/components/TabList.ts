@@ -23,14 +23,14 @@ export function TabList(tabs: Tab[], type: TabListType = TabListType.Square) {
         tabList.qsa(".tab")!.forEach((tab) => tab?.classOff("active"));
         tabElm.classOn("active");
         // requestAnimationFrame(async () => {
-        //   let tBCR = tabContent.elm.offsetHeight;
+        // let tBCR = tabContent.elm.offsetHeight;
         tabContent.clear();
         await tab.select(tabContent);
-        //   requestAnimationFrame(() => {
-        //     let nBCR = tabContent.elm.offsetHeight;
-        //     console.log(tBCR, nBCR);
-        //     gsap.fromTo(tabContent.elm, { height: tBCR }, { height: nBCR });
-        //   });
+        // requestAnimationFrame(() => {
+        // let nBCR = tabContent.elm.offsetHeight;
+        // console.log(tBCR, nBCR);
+        // gsap.fromTo(tabContent.elm, { minHeight: tBCR }, { minHeight: nBCR });
+        // });
         // });
       })
       .appendTo(tabList);

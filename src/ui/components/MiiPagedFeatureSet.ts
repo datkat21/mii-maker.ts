@@ -6,6 +6,7 @@ import md5 from "md5";
 export enum FeatureSetType {
   Icon,
   Range,
+  Switch,
 }
 export interface FeatureSetIconItem {
   type: FeatureSetType.Icon;
@@ -15,13 +16,23 @@ export interface FeatureSetIconItem {
 }
 export interface FeatureSetRangeItem {
   type: FeatureSetType.Range;
-  icon?: string;
+  iconStart: string;
+  iconEnd: string;
   min: number;
   max: number;
   property: string;
 }
+export interface FeatureSetSwitchItem {
+  type: FeatureSetType.Switch;
+  iconOff: string;
+  iconOn: string;
+  property: string;
+}
 
-export type FeatureSetItem = FeatureSetIconItem | FeatureSetRangeItem;
+export type FeatureSetItem =
+  | FeatureSetIconItem
+  | FeatureSetRangeItem
+  | FeatureSetSwitchItem;
 export interface FeatureSetEntry {
   label: string;
   items: FeatureSetItem[];
@@ -88,11 +99,17 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
 
                 const id = md5(String(Math.random() * 21412855));
 
-                if (item.icon) {
-                  let featureLabel = new Html("label")
-                    .attr({ for: id })
-                    .text(item.icon)
-                    .appendTo(featureRangeItem);
+                if (item.iconStart) {
+                  let frontIcon = new Html("span")
+                    .html(item.iconStart)
+                    .on("click", () => {
+                      featureSlider.val(Number(featureSlider.getValue()) - 1);
+                      (tmpMii as Record<string, any>)[item.property] = Number(
+                        featureSlider.getValue()
+                      );
+                      set.onChange(tmpMii);
+                    });
+                  featureRangeItem.append(frontIcon);
                 }
 
                 let featureSlider = new Html("input")
@@ -104,6 +121,19 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
                   .id(id)
                   .appendTo(featureRangeItem);
 
+                if (item.iconEnd) {
+                  let backIcon = new Html("span")
+                    .html(item.iconEnd)
+                    .on("click", () => {
+                      featureSlider.val(Number(featureSlider.getValue()) + 1);
+                      (tmpMii as Record<string, any>)[item.property] = Number(
+                        featureSlider.getValue()
+                      );
+                      set.onChange(tmpMii);
+                    });
+                  featureRangeItem.append(backIcon);
+                }
+
                 featureSlider.val(
                   (tmpMii as Record<string, any>)[item.property]
                 );
@@ -113,10 +143,7 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
                     featureSlider.getValue()
                   );
                   set.onChange(tmpMii);
-                  // setList.qsa(".feature-item")!.forEach((i) => i!.classOff("active"));
-                  // featureItem.classOn("active");
                 });
-                // (tmpMii as Record<string, any>)[key] === item.value
 
                 break;
             }

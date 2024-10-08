@@ -8,6 +8,7 @@ import {
 import type { IconSet } from "../../class/MiiEditor";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
+import EditorTabIcons from "../../constants/EditorTabIcons";
 
 export function NoseTab(data: TabRenderInit) {
   data.container.append(
@@ -20,7 +21,8 @@ export function NoseTab(data: TabRenderInit) {
           items: ArrayNum(18).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            icon: String(k),
+            icon: data.icons.nose[k],
+            // icon: String(k),
           })),
         },
         nosePosition: {
@@ -29,14 +31,16 @@ export function NoseTab(data: TabRenderInit) {
             {
               type: FeatureSetType.Range,
               property: "noseYPosition",
-              icon: "noseYPosition",
+              iconStart: EditorTabIcons.positionMoveUp,
+              iconEnd: EditorTabIcons.positionMoveDown,
               min: 0,
               max: 18,
             },
             {
               type: FeatureSetType.Range,
               property: "noseScale",
-              icon: "noseScale",
+              iconStart: EditorTabIcons.positionSizeDown,
+              iconEnd: EditorTabIcons.positionSizeUp,
               min: 0,
               max: 8,
             },

@@ -46,21 +46,21 @@ export class Mii3DScene {
       ])
       .then((environmentMap) => {
         this.#scene.environment = environmentMap;
-        this.#scene.environmentIntensity = 1.25;
+        this.#scene.environmentIntensity = 1;
       });
-    cubeTextureLoader
-      .loadAsync([
-        "./assets/img/sky_px.png", // px.png
-        "./assets/img/sky_nx.png", // nx.png
-        "./assets/img/sky_py.png", // py.png
-        "./assets/img/sky_ny.png", // ny.png
-        "./assets/img/sky_pz.png", // pz.png
-        "./assets/img/sky_nz.png", // nz.png
-      ])
-      .then((backgroundMap) => {
-        this.#scene.background = backgroundMap;
-        this.#scene.backgroundIntensity = 0.2;
-      });
+    // cubeTextureLoader
+    //   .loadAsync([
+    //     "./assets/img/sky_px.png", // px.png
+    //     "./assets/img/sky_nx.png", // nx.png
+    //     "./assets/img/sky_py.png", // py.png
+    //     "./assets/img/sky_ny.png", // ny.png
+    //     "./assets/img/sky_pz.png", // pz.png
+    //     "./assets/img/sky_nz.png", // nz.png
+    //   ])
+    //   .then((backgroundMap) => {
+    //     this.#scene.background = backgroundMap;
+    //     this.#scene.backgroundIntensity = 0.2;
+    //   });
 
     const directionalLight = new THREE.DirectionalLight(0xebfeff, Math.PI);
     directionalLight.position.set(1, 0.1, 1);
@@ -86,6 +86,8 @@ export class Mii3DScene {
     this.#controls.mouseButtons.wheel = CameraControls.ACTION.DOLLY;
     this.#controls.minDistance = 15;
     this.#controls.maxDistance = 35;
+    this.#controls.minAzimuthAngle = -Math.PI;
+    this.#controls.maxAzimuthAngle = Math.PI;
 
     // this.#controls.maxTargetRadius = 10;
     // this.#controls.enableDamping = true;
@@ -134,10 +136,13 @@ export class Mii3DScene {
     if (part === CameraPosition.MiiFullBody) {
       this.#controls.moveTo(0, 0, 0, true);
       this.#controls.rotateTo(0, Math.PI / 2, true);
-      this.#controls.zoomTo(1.5, true);
+      // this.#controls.zoomTo(1.5, true);
+      this.#controls.dollyTo(25, true);
     } else if (part === CameraPosition.MiiHead) {
       this.#controls.moveTo(0, 3.5, 0, true);
-      this.#controls.zoomTo(1.8, true);
+      this.#controls.rotateTo(0, Math.PI / 2, true);
+      // this.#controls.zoomTo(1.8, true);
+      this.#controls.dollyTo(15, true);
     }
   }
   resize() {
@@ -187,6 +192,11 @@ export class Mii3DScene {
         new THREE.MeshStandardMaterial({ color: 0xffffff });
       (glb.scene.getObjectByName(`legs_${type}`)! as THREE.Mesh).material =
         new THREE.MeshStandardMaterial({ color: 0x666666 });
+
+      if (this.#scene.getObjectByName("m"))
+        this.#scene.getObjectByName("m")!.visible = false;
+      if (this.#scene.getObjectByName("f"))
+        this.#scene.getObjectByName("f")!.visible = false;
     };
 
     await setupGlb("./miiBodyM.glb", "m");
@@ -260,7 +270,7 @@ export class Mii3DScene {
     );
 
     if (head !== undefined) {
-      console.log("attempting to remove head", head);
+      // console.log("attempting to remove head", head);
       this.#scene.remove(head);
     }
 

@@ -1,5 +1,4 @@
-import { MiiEditor, MiiGender } from "../class/MiiEditor";
-import { PartSelectButton } from "./components/PartSelectButton";
+import { MiiEditor } from "../class/MiiEditor";
 
 export async function setupUi() {
   let random = await fetch(

@@ -10,6 +10,7 @@ import { MiiEyeTable, rearrangeArray } from "../../constants/MiiFeatureTable";
 import { MiiEyeColorTable } from "../../constants/ColorTables";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
+import EditorTabIcons from "../../constants/EditorTabIcons";
 
 export function EyeTab(data: TabRenderInit) {
   data.container.append(
@@ -19,14 +20,14 @@ export function EyeTab(data: TabRenderInit) {
       entries: {
         eyeType: {
           label: "Type",
-          items: rearrangeArray(
-            ArrayNum(60).map((k) => ({
-              type: FeatureSetType.Icon,
-              value: k,
-              icon: data.icons.eyes[k],
-            })),
-            MiiEyeTable
-          ),
+          // rearrangeArray(
+          items: ArrayNum(60).map((k) => ({
+            type: FeatureSetType.Icon,
+            value: k,
+            icon: data.icons.eyes[k],
+          })),
+          // MiiEyeTable
+          // ),
         },
         eyeColor: {
           label: "Color",
@@ -42,35 +43,40 @@ export function EyeTab(data: TabRenderInit) {
             {
               type: FeatureSetType.Range,
               property: "eyeYPosition",
-              icon: "eyeYPosition",
+              iconStart: EditorTabIcons.positionMoveUp,
+              iconEnd: EditorTabIcons.positionMoveDown,
               min: 0,
               max: 18,
             },
             {
               type: FeatureSetType.Range,
               property: "eyeSpacing",
-              icon: "eyeSpacing",
+              iconStart: EditorTabIcons.positionPushIn,
+              iconEnd: EditorTabIcons.positionPushOut,
               min: 0,
               max: 12,
             },
             {
               type: FeatureSetType.Range,
               property: "eyeRotation",
-              icon: "eyeRotation",
+              iconStart: EditorTabIcons.positionRotateCW,
+              iconEnd: EditorTabIcons.positionRotateCCW,
               min: 0,
               max: 7,
             },
             {
               type: FeatureSetType.Range,
               property: "eyeScale",
-              icon: "eyeScale",
+              iconStart: EditorTabIcons.positionSizeDown,
+              iconEnd: EditorTabIcons.positionSizeUp,
               min: 0,
               max: 7,
             },
             {
               type: FeatureSetType.Range,
               property: "eyeVerticalStretch",
-              icon: "eyeVerticalStretch",
+              iconStart: EditorTabIcons.positionStretchIn,
+              iconEnd: EditorTabIcons.positionStretchOut,
               min: 0,
               max: 6,
             },

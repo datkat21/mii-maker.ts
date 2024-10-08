@@ -3,12 +3,74 @@ body {
   background-color: white;
   color: #000;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --eye-color: #6c7070;
+  --selection-color: rgb(0, 145, 255);
+  --root: #ffffff;
+  --text: #000000;
+  --container: #eeeeee;
+  --sub-container: #ececec;
+  --hover: #dddddd;
+  --focus: #ffffff;
+  --icon-face-fill: #ffffff;
+  --icon-face-stroke: #6f6f6f;
+  --icon-face-detail: #8d8d8d;
+  --icon-face-makeup: #ffbaba;
+  --icon-face-wrinkles: #996d54;
+  --icon-head-fill: #ffffff;
+  --icon-head-stroke: #999999;
+  --icon-mouth-tooth: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  html,
+  body {
+    --eye-color: #6c7070;
+    --selection-color: rgb(0, 145, 255);
+    --root: #050505;
+    --text: #ffffff;
+    --container: #262626;
+    --sub-container: #2c2c2c;
+    --hover: #3e3e3e;
+    --focus: #373737;
+    --icon-face-fill: #000000;
+    --icon-face-stroke: #ffffff;
+    --icon-face-detail: #ffffff;
+    --icon-face-makeup: #ffbaba;
+    --icon-face-wrinkles: #996d54;
+    --icon-head-fill: #000000;
+    --icon-head-stroke: #999999;
+    --icon-mouth-tooth: #;
+    --icon-lip-color-top: #712a04;
+    --icon-lip-color-bottom: #be4e26;
+  }
 }
 
 * {
   box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.modal-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+}
+.modal-dialog .modal-base {
+  display: flex;
+  flex-direction: column;
+  background: var(--root);
+}
+
+button {
+  font: inherit;
+  background-color: var(--root);
+  color: var(--text);
+  padding: 8px;
+  border: 2px solid var(--focus);
+  border-radius: 8px;
 }
 
 .ui-base {
@@ -58,40 +120,6 @@ body {
 .ui-base {
   padding: 1rem;
   grid-gap: 1rem;
-  --eye-color: #6c7070;
-  --selection-color: rgb(0, 145, 255);
-  --root: #ffffff;
-  --text: #000000;
-  --container: #eeeeee;
-  --sub-container: #ececec;
-  --hover: #dddddd;
-  --focus: #ffffff;
-  --icon-face-fill: #ffffff;
-  --icon-face-stroke: #6f6f6f;
-  --icon-face-detail: #8d8d8d;
-  --icon-face-makeup: #ffbaba;
-  --icon-face-wrinkles: #996d54;
-  --icon-head-fill: #ffffff;
-  --icon-head-stroke: #999999;
-}
-@media (prefers-color-scheme: dark) {
-  .ui-base {
-    --eye-color: #6c7070;
-    --selection-color: rgb(0, 145, 255);
-    --root: #050505;
-    --text: #ffffff;
-    --container: #262626;
-    --sub-container: #2c2c2c;
-    --hover: #3e3e3e;
-    --focus: #373737;
-    --icon-face-fill: #000000;
-    --icon-face-stroke: #ffffff;
-    --icon-face-detail: #ffffff;
-    --icon-face-makeup: #ffbaba;
-    --icon-face-wrinkles: #996d54;
-    --icon-head-fill: #000000;
-    --icon-head-stroke: #999999;
-  }
 }
 .ui-base > div {
   border-radius: 8px;
@@ -103,10 +131,18 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
+.ui-base .mii-holder .render-mode-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+.ui-base .mii-holder img,
 .ui-base .mii-holder canvas {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 .ui-base .tab-list {
   display: flex;
@@ -155,11 +191,27 @@ body {
   grid-area: tabContent;
   background-color: var(--sub-container);
 }
+.ui-base .tab-content .feature-set-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.ui-base .tab-content .feature-set-container .tab-content {
+  overflow: auto;
+  flex: 1;
+}
 .ui-base .tab-content .feature-set-group {
   padding: 8px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+.ui-base .tab-content .feature-set-group .feature-slider {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
 }
 .ui-base .tab-content .feature-set-group .feature-item {
   width: 52px;
