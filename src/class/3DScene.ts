@@ -35,26 +35,32 @@ export class Mii3DScene {
     this.ready = false;
 
     const cubeTextureLoader = new THREE.CubeTextureLoader();
-    const environmentMap = cubeTextureLoader.load([
-      "./cube_map.png", // px.png
-      "./cube_map.png", // nx.png
-      "./cube_map.png", // py.png
-      "./cube_map.png", // ny.png
-      "./cube_map.png", // pz.png
-      "./cube_map.png", // nz.png
-    ]);
-    const backgroundMap = cubeTextureLoader.load([
-      "./assets/img/space_px.png", // px.png
-      "./assets/img/space_nx.png", // nx.png
-      "./assets/img/space_py.png", // py.png
-      "./assets/img/space_ny.png", // ny.png
-      "./assets/img/space_pz.png", // pz.png
-      "./assets/img/space_nz.png", // nz.png
-    ]);
-    this.#scene.environment = environmentMap;
-    this.#scene.background = backgroundMap;
-    this.#scene.backgroundIntensity = 2;
-    this.#scene.environmentIntensity = 1.25;
+    cubeTextureLoader
+      .loadAsync([
+        "./cube_map.png", // px.png
+        "./cube_map.png", // nx.png
+        "./cube_map.png", // py.png
+        "./cube_map.png", // ny.png
+        "./cube_map.png", // pz.png
+        "./cube_map.png", // nz.png
+      ])
+      .then((environmentMap) => {
+        this.#scene.environment = environmentMap;
+        this.#scene.environmentIntensity = 1.25;
+      });
+    cubeTextureLoader
+      .loadAsync([
+        "./assets/img/sky_px.png", // px.png
+        "./assets/img/sky_nx.png", // nx.png
+        "./assets/img/sky_py.png", // py.png
+        "./assets/img/sky_ny.png", // ny.png
+        "./assets/img/sky_pz.png", // pz.png
+        "./assets/img/sky_nz.png", // nz.png
+      ])
+      .then((backgroundMap) => {
+        this.#scene.background = backgroundMap;
+        this.#scene.backgroundIntensity = 0.2;
+      });
 
     const directionalLight = new THREE.DirectionalLight(0xebfeff, Math.PI);
     directionalLight.position.set(1, 0.1, 1);

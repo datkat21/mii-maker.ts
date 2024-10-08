@@ -7,6 +7,8 @@ body {
 
 * {
   box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .ui-base {
@@ -19,7 +21,7 @@ body {
   height: 100%;
   display: grid;
   grid-template-areas: "mii tabList" "mii tabContent";
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr 1fr;
   grid-template-rows: auto 1fr;
 }
 @media screen and (max-width: 900px) {

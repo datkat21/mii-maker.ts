@@ -43,6 +43,8 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
   for (const key in set.entries) {
     const entry = set.entries[key];
 
+    console.log("mii value:", key, (tmpMii as Record<string, any>)[key]);
+
     tabListInit.push({
       icon: entry.label,
       select(content) {

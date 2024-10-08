@@ -9,6 +9,7 @@ import { HeadTab } from "../ui/tabs/Head";
 import type { TabBase, TabRenderInit } from "../constants/TabRenderType";
 import { EmptyTab } from "../ui/tabs/Empty";
 import { MiscTab } from "../ui/tabs/Misc";
+import { NoseTab } from "../ui/tabs/Nose";
 
 export enum MiiGender {
   Male,
@@ -39,7 +40,7 @@ export class MiiEditor {
     tabContent: Html;
   };
 
-  constructor(gender: MiiGender) {
+  constructor(gender: MiiGender, init?: string) {
     let initString =
       "AwEAAAAAAAAAAAAAgP9wmQAAAAAAAAAAAABNAGkAaQAAAAAAAAAAAAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMNn";
     if (gender === MiiGender.Male) {
@@ -52,6 +53,8 @@ export class MiiEditor {
       initString =
         "AwAFMG0rAiKJRLe1nDWwN5i26X5uuAAAY0FjAGgAYQByAGwAaQBuAGUAAAAAAEwmApBlBttoRBggNEYUgRITYg0AACkAUkhQYwBoAGEAcgBsAGkAbgBlAAAAAAAAAHLb";
     }
+    if (init) initString = init;
+
     this.mii = new Mii(Buffer.from(initString, "base64") as unknown as Buffer);
 
     window.mii = this.mii;
@@ -115,7 +118,7 @@ export class MiiEditor {
       },
       {
         icon: EditorTabIcons.nose,
-        select: TabInit(EmptyTab, CameraPosition.MiiHead),
+        select: TabInit(NoseTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorTabIcons.mouth,
