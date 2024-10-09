@@ -15,11 +15,11 @@ export class BitView {
       source instanceof ArrayBuffer ||
       (typeof Buffer !== "undefined" && source instanceof Buffer);
 
-    console.log(
-      "isBuffer check",
-      source instanceof ArrayBuffer,
-      typeof Buffer !== "undefined" && source instanceof Buffer
-    );
+    // console.log(
+    //   "isBuffer check",
+    //   source instanceof ArrayBuffer,
+    //   typeof Buffer !== "undefined" && source instanceof Buffer
+    // );
 
     if (!isBuffer) {
       throw new Error("Must specify a valid ArrayBuffer or Buffer.");
@@ -383,11 +383,11 @@ export class BitStream {
       source instanceof ArrayBuffer ||
       (typeof Buffer !== "undefined" && source instanceof Buffer);
 
-    console.log(
-      "isBuffer check",
-      source instanceof ArrayBuffer,
-      typeof Buffer !== "undefined" && source instanceof Buffer
-    );
+    // console.log(
+    //   "isBuffer check",
+    //   source instanceof ArrayBuffer,
+    //   typeof Buffer !== "undefined" && source instanceof Buffer
+    // );
 
     if (!(source instanceof BitView) && !isBuffer) {
       throw new Error("Must specify a valid BitView, ArrayBuffer or Buffer");

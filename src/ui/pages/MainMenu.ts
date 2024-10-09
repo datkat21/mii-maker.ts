@@ -14,7 +14,7 @@ export function MainMenu() {
       },
     },
     {
-      text: "Editor",
+      text: "Editor Demo",
       callback() {
         window.editor = new MiiEditor(
           Math.round(Math.random()),

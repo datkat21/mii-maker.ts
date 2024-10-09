@@ -1,5 +1,6 @@
 import Html from "@datkat21/html";
 import { playSound } from "../../class/audio/SoundManager";
+import { AddButtonSounds } from "../../util/AddButtonSounds";
 
 export type ModalButton = {
   text: string;
@@ -39,23 +40,46 @@ export default {
       if (!button.text || !button.callback)
         throw new Error("Invalid button configuration");
 
-      const b = new Html("button").text(button.text).on("click", (e: any) => {
-        x.class("closing");
-        setTimeout(() => {
-          x.cleanup();
-          button.callback(e);
-        }, 350);
-      });
+      if (button.text === "Cancel") {
+        let isClosing = false;
+        const closeButtonHandler = (e: Event) => {
+          // sometimes duplicated events
+          if (isClosing) return;
+          isClosing = true;
+          const t = e.target as HTMLElement;
+          if (t == null) return;
+          if (
+            t.closest(".modal-content") &&
+            !t.classList.contains("close-button")
+          )
+            return;
+          x.classOn("closing");
+          setTimeout(() => {
+            x.cleanup();
+            button.callback(e);
+          }, 350);
+        };
+        AddButtonSounds(
+          new Html("button")
+            .class("close-button")
+            .appendTo(modalHeader)
+            .on("click", closeButtonHandler)
+        );
+        x.on("click", closeButtonHandler);
+        continue;
+      }
+      const b = AddButtonSounds(
+        new Html("button").text(button.text).on("click", (e: any) => {
+          x.class("closing");
+          setTimeout(() => {
+            x.cleanup();
+            button.callback(e);
+          }, 350);
+        })
+      );
 
       if (button.type && button.type === "primary") b.class("primary");
       if (button.type && button.type === "danger") b.class("danger");
-
-      b.on("pointerenter", () => {
-        playSound("hover");
-      });
-      b.on("click", () => {
-        playSound("select");
-      });
 
       b.appendTo(modalContent.elm.querySelector(".flex-group")! as HTMLElement);
     }
@@ -96,17 +120,31 @@ export default {
       );
     });
 
-    // requestAnimationFrame(() => {
-    //   (modalBody.elm.querySelector("input,button")! as HTMLElement).focus();
-    // });
+    requestAnimationFrame(() => {
+      (modalBody.elm.querySelector("input") as HTMLElement) &&
+        (modalBody.elm.querySelector("input") as HTMLElement).focus();
+    });
 
     return x;
   },
-  alert: function (title: any, content: any, parent = "body") {
+  alert: function (
+    title: any,
+    content: any,
+    parent = "body",
+    selectable = false
+  ) {
     return new Promise((res, _rej) => {
-      this.modal(title, content, parent, {
+      let p = parent;
+      if (selectable) {
+        new Html("div").class("modal-selectable").appendTo("body");
+        p = ".modal-selectable";
+      }
+      this.modal(title, content, p, {
         text: "OK",
-        callback: (_: any) => res(true),
+        callback: (_: any) => {
+          res(true);
+          Html.qs(".modal-selectable")?.cleanup();
+        },
       });
     });
   },

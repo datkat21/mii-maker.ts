@@ -1,12 +1,12 @@
+import KaitaiStream from "./kaitai-stream.min.js";
+
+window.KaitaiStream = KaitaiStream;
+console.log("LOADED STRUCTS");
+
+const me = window;
 (function (root, factory) {
-  if (typeof define === "function" && define.amd) {
-    define(["kaitai-struct/KaitaiStream"], factory);
-  } else if (typeof module === "object" && module.exports) {
-    module.exports = factory(require("kaitai-struct/KaitaiStream"));
-  } else {
-    root.Gen1Wii = factory(root.KaitaiStream);
-  }
-})(typeof self !== "undefined" ? self : this, function (KaitaiStream) {
+  root.Gen1Wii = factory(root.KaitaiStream);
+})(typeof me !== "undefined" ? me : this, function (KaitaiStream) {
   var Gen1Wii = (function () {
     function Gen1Wii(_io, _parent, _root) {
       this._io = _io;
@@ -98,14 +98,8 @@
   return Gen1Wii;
 });
 (function (root, factory) {
-  if (typeof define === "function" && define.amd) {
-    define(["kaitai-struct/KaitaiStream"], factory);
-  } else if (typeof module === "object" && module.exports) {
-    module.exports = factory(require("kaitai-struct/KaitaiStream"));
-  } else {
-    root.Gen2Wiiu3dsMiitomo = factory(root.KaitaiStream);
-  }
-})(typeof self !== "undefined" ? self : this, function (KaitaiStream) {
+  root.Gen2Wiiu3dsMiitomo = factory(root.KaitaiStream);
+})(typeof me !== "undefined" ? me : this, function (KaitaiStream) {
   var Gen2Wiiu3dsMiitomo = (function () {
     function Gen2Wiiu3dsMiitomo(_io, _parent, _root) {
       this._io = _io;
@@ -464,14 +458,8 @@
   return Gen2Wiiu3dsMiitomo;
 });
 (function (root, factory) {
-  if (typeof define === "function" && define.amd) {
-    define(["kaitai-struct/KaitaiStream"], factory);
-  } else if (typeof module === "object" && module.exports) {
-    module.exports = factory(require("kaitai-struct/KaitaiStream"));
-  } else {
-    root.Gen2Wiiu3dsMiitomoNfpstoredataextention = factory(root.KaitaiStream);
-  }
-})(typeof self !== "undefined" ? self : this, function (KaitaiStream) {
+  root.Gen2Wiiu3dsMiitomoNfpstoredataextention = factory(root.KaitaiStream);
+})(typeof me !== "undefined" ? me : this, function (KaitaiStream) {
   var Gen2Wiiu3dsMiitomoNfpstoredataextention = (function () {
     function Gen2Wiiu3dsMiitomoNfpstoredataextention(_io, _parent, _root) {
       this._io = _io;
@@ -1001,14 +989,8 @@
   return Gen2Wiiu3dsMiitomoNfpstoredataextention;
 });
 (function (root, factory) {
-  if (typeof define === "function" && define.amd) {
-    define(["kaitai-struct/KaitaiStream"], factory);
-  } else if (typeof module === "object" && module.exports) {
-    module.exports = factory(require("kaitai-struct/KaitaiStream"));
-  } else {
-    root.Gen3Studio = factory(root.KaitaiStream);
-  }
-})(typeof self !== "undefined" ? self : this, function (KaitaiStream) {
+  root.Gen3Studio = factory(root.KaitaiStream);
+})(typeof me !== "undefined" ? me : this, function (KaitaiStream) {
   var Gen3Studio = (function () {
     function Gen3Studio(_io, _parent, _root) {
       this._io = _io;
@@ -1069,14 +1051,8 @@
   return Gen3Studio;
 });
 (function (root, factory) {
-  if (typeof define === "function" && define.amd) {
-    define(["kaitai-struct/KaitaiStream"], factory);
-  } else if (typeof module === "object" && module.exports) {
-    module.exports = factory(require("kaitai-struct/KaitaiStream"));
-  } else {
-    root.Gen3Switch = factory(root.KaitaiStream);
-  }
-})(typeof self !== "undefined" ? self : this, function (KaitaiStream) {
+  root.Gen3Switch = factory(root.KaitaiStream);
+})(typeof me !== "undefined" ? me : this, function (KaitaiStream) {
   var Gen3Switch = (function () {
     function Gen3Switch(_io, _parent, _root) {
       this._io = _io;
@@ -1153,14 +1129,8 @@
   return Gen3Switch;
 });
 (function (root, factory) {
-  if (typeof define === "function" && define.amd) {
-    define(["kaitai-struct/KaitaiStream"], factory);
-  } else if (typeof module === "object" && module.exports) {
-    module.exports = factory(require("kaitai-struct/KaitaiStream"));
-  } else {
-    root.Gen3Switchgame = factory(root.KaitaiStream);
-  }
-})(typeof self !== "undefined" ? self : this, function (KaitaiStream) {
+  root.Gen3Switchgame = factory(root.KaitaiStream);
+})(typeof me !== "undefined" ? me : this, function (KaitaiStream) {
   var Gen3Switchgame = (function () {
     function Gen3Switchgame(_io, _parent, _root) {
       this._io = _io;

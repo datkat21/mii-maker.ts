@@ -28,7 +28,7 @@ export class Mii3DScene {
     this.#parent = parent;
     this.#scene = new THREE.Scene();
     this.#camera = new THREE.PerspectiveCamera(
-      75,
+      45,
       parent.offsetWidth / parent.offsetHeight,
       0.1,
       1000

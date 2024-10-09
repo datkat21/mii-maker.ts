@@ -17,8 +17,8 @@ export async function compile(
     sourcemap: "linked",
     minify: {
       identifiers: false,
-      syntax: false,
-      whitespace: false,
+      syntax: true,
+      whitespace: true,
     },
   });
 }

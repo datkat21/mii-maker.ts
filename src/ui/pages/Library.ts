@@ -8,6 +8,14 @@ import { Buffer } from "../../../node_modules/buffer/index";
 import Loader from "../components/Loader";
 import { playSound } from "../../class/audio/SoundManager";
 import { AddButtonSounds } from "../../util/AddButtonSounds";
+import { encryptAndEncodeVer3StoreDataToQRCodeFormat } from "../../util/EncodeQRCode";
+export const savedMiiCount = async () =>
+  (await localforage.keys()).filter((k) => k.startsWith("mii-")).length;
+
+export const miiIconUrl = (data: string) =>
+  `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
+    data
+  )}&shaderType=2&type=face&width=180&verifyCharInfo=0`;
 
 export async function Library() {
   function shutdown(): Promise<void> {
@@ -23,6 +31,8 @@ export async function Library() {
   const container = new Html("div").class("mii-library").appendTo("body");
 
   const sidebar = new Html("div").class("library-sidebar").appendTo(container);
+
+  sidebar.append(new Html("h1").text("Mii Maker"));
 
   const libraryList = new Html("div").class("library-list").appendTo(container);
 
@@ -50,9 +60,7 @@ export async function Library() {
       miiData.validate();
 
       let miiImage = new Html("img").attr({
-        src: `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
-          mii.mii
-        )}&shaderType=2&type=face&width=180&verifyCharInfo=0`,
+        src: miiIconUrl(mii.mii),
       });
       let miiName = new Html("span").text(miiData.miiName);
 
@@ -115,7 +123,10 @@ const miiCreateFromScratch = () => {
     return () => {
       new MiiEditor(gender, async (m, shouldSave) => {
         if (shouldSave === true)
-          await localforage.setItem("mii-" + Date.now(), m);
+          await localforage.setItem(
+            `mii-${await savedMiiCount()}-${Date.now()}`,
+            m
+          );
         Library();
       });
     };
@@ -169,7 +180,10 @@ const miiCreatePNID = async () => {
     0,
     async (m, shouldSave) => {
       if (shouldSave === true)
-        await localforage.setItem("mii-" + Date.now(), m);
+        await localforage.setItem(
+          `mii-${await savedMiiCount()}-${Date.now()}`,
+          m
+        );
       Library();
     },
     (await pnid.json()).data
@@ -184,8 +198,12 @@ const miiCreateRandom = async () => {
 
   new MiiEditor(
     0,
-    async (m) => {
-      await localforage.setItem("mii-" + Date.now(), m);
+    async (m, shouldSave) => {
+      if (shouldSave === true)
+        await localforage.setItem(
+          `mii-${await savedMiiCount()}-${Date.now()}`,
+          m
+        );
       Library();
     },
     random.data
@@ -193,8 +211,8 @@ const miiCreateRandom = async () => {
 };
 const miiEdit = (mii: MiiLocalforage, shutdown: () => any) => {
   return () => {
-    Modal.modal(
-      "Mii Maker Web",
+    const modal = Modal.modal(
+      "Mii Options",
       "What would you like to do?",
       "body",
       {
@@ -203,8 +221,8 @@ const miiEdit = (mii: MiiLocalforage, shutdown: () => any) => {
           await shutdown();
           new MiiEditor(
             0,
-            async (m) => {
-              await localforage.setItem(mii.id, m);
+            async (m, shouldSave) => {
+              if (shouldSave === true) await localforage.setItem(mii.id, m);
               Library();
             },
             mii.mii
@@ -220,11 +238,80 @@ const miiEdit = (mii: MiiLocalforage, shutdown: () => any) => {
         },
       },
       {
+        text: "Export",
+        async callback() {
+          miiExport(mii);
+        },
+      },
+      {
         text: "Cancel",
         async callback() {
           /* ... */
         },
       }
     );
+    modal
+      .qs(".modal-body")
+      ?.prepend(
+        new Html("img")
+          .attr({ src: miiIconUrl(mii.mii) })
+          .style({ width: "180px", margin: "0 auto" })
+      );
   };
+};
+import qrjs from "../../external/mii-frontend/qrjs.min.js";
+import {
+  convertDataToType,
+  supportedFormats,
+} from "../../external/mii-frontend/data-conversion.js";
+import * as structs from "../../external/mii-frontend/all-kaitai-structs.js";
+console.log(structs);
+
+const ver3Format = supportedFormats.find(
+  (f) => f.className === "Gen2Wiiu3dsMiitomo"
+)!;
+const miiExport = (mii: MiiLocalforage) => {
+  Modal.modal(
+    "Mii Export",
+    "What would you like to do?",
+    "body",
+    {
+      text: "Generate QR code",
+      async callback() {
+        const convertedVer3Data = convertDataToType(
+          new Uint8Array(Buffer.from(mii.mii, "base64")),
+          ver3Format,
+          ver3Format.className,
+          true
+        );
+        const ver3QRData =
+          encryptAndEncodeVer3StoreDataToQRCodeFormat(convertedVer3Data);
+        console.log(convertedVer3Data, ver3QRData);
+        const png = qrjs.generatePNG(ver3QRData, { margin: null });
+        console.log(ver3QRData, png);
+        const qrcode = URL.createObjectURL(await (await fetch(png)).blob());
+        console.log(qrcode);
+      },
+    },
+    {
+      text: "Get FFSD data",
+      async callback() {
+        return Modal.alert(
+          "FFSD code",
+          mii.mii,
+          // Buffer.from(
+          //   new Mii(Buffer.from(mii.mii, "base64")).encode()
+          // ).toString("base64"),
+          "body",
+          true
+        );
+      },
+    },
+    {
+      text: "Cancel",
+      async callback() {
+        /* ... */
+      },
+    }
+  );
 };

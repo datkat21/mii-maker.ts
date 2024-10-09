@@ -58,6 +58,16 @@ body {
   -webkit-user-select: none;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 550;
+  margin: 0;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -98,6 +108,17 @@ body {
     transform: translate(-50%, -50%) rotate(360deg);
   }
 }
+.modal-selectable {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.modal-selectable .modal-body > span {
+  user-select: all !important;
+}
+
 .modal {
   position: fixed;
   width: 100%;
@@ -109,14 +130,14 @@ body {
   z-index: 999999999;
   top: 0;
   left: 0;
-  animation: fadeIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .modal.closing {
-  animation: fadeOut 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: fadeOut 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none !important;
 }
 .modal.closing .modal-content {
-  animation: shortSlideDown 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: shortSlideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .modal .modal-content {
   display: flex;
@@ -128,7 +149,7 @@ body {
   max-width: 480px;
   max-height: 440px;
   overflow: clip;
-  animation: shortSlideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: shortSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .modal .modal-content .modal-header {
   padding: 8px;
@@ -137,6 +158,22 @@ body {
   background-color: var(--hover);
   flex-shrink: 0;
   border-radius: 5px 5px 0 0;
+  position: relative;
+}
+.modal .modal-content .modal-header .close-button {
+  background: var(--error-color);
+  border-radius: 50%;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  min-width: 0;
+  position: absolute;
+  top: 50%;
+  left: 0.5rem;
+  transform: translateY(-50%);
+}
+.modal .modal-content .modal-header .close-button:hover {
+  filter: brightness(0.8);
 }
 .modal .modal-content .modal-body {
   padding: 16px 18px;
@@ -152,6 +189,8 @@ body {
 .modal .modal-content .modal-body span {
   display: block;
   white-space: pre-wrap;
+  width: 100%;
+  overflow: auto;
 }
 
 .flex-group {
@@ -165,6 +204,10 @@ body {
   flex-direction: column;
   flex-wrap: wrap;
   gap: 16px;
+}
+
+.no-pad {
+  padding: 0 !important;
 }
 
 button {
@@ -197,6 +240,12 @@ input {
   border-radius: 8px;
   outline: 0;
 }
+input:disabled {
+  background-color: var(--container);
+  color: var(--label);
+  cursor: not-allowed;
+  user-select: none;
+}
 input:focus {
   outline: 0;
   box-shadow: 0 0 0 0.2rem var(--selection-color);
@@ -221,12 +270,12 @@ input[type=range] {
 
 .fadeIn {
   pointer-events: none;
-  animation: fadeIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .fadeOut {
   pointer-events: none;
-  animation: fadeOut 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  animation: fadeOut 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .loader {
@@ -259,11 +308,11 @@ input[type=range] {
   grid-template-areas: "mii tabList" "mii tabContent";
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto 1fr;
-  animation: fadeIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .ui-base.closing {
   pointer-events: none;
-  animation: fadeOut 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  animation: fadeOut 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 @media screen and (max-width: 550px) {
   .ui-base {
@@ -404,21 +453,30 @@ input[type=range] {
   flex-wrap: wrap;
   gap: 6px;
 }
-.ui-base .tab-content .feature-set-group .feature-switch .feature-switch-left {
-  flex: 1;
+.ui-base .tab-content .feature-set-group .feature-switch {
   display: flex;
-  width: 64px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 8px 8px 0 0;
+}
+.ui-base .tab-content .feature-set-group .feature-switch .feature-switch-left {
+  border-radius: 8px 0 0 8px;
 }
 .ui-base .tab-content .feature-set-group .feature-switch .feature-switch-right {
+  border-radius: 0 8px 8px 0;
+}
+.ui-base .tab-content .feature-set-group .feature-switch .feature-switch-left,
+.ui-base .tab-content .feature-set-group .feature-switch .feature-switch-right {
+  padding: 2.5px 14px;
   flex: 1;
   display: flex;
   width: 64px;
+  height: max-content;
   justify-content: center;
   align-items: center;
-  border-radius: 0 0 8px 8px;
+  border-right-width: 1px;
+}
+.ui-base .tab-content .feature-set-group .feature-switch .feature-switch-left.active,
+.ui-base .tab-content .feature-set-group .feature-switch .feature-switch-right.active {
+  background-color: var(--focus);
+  box-shadow: 0 0 0 0.3rem var(--selection-color);
 }
 .ui-base .tab-content .feature-set-group .feature-slider,
 .ui-base .tab-content .feature-set-group .feature-range {
@@ -457,7 +515,7 @@ input[type=range] {
 }
 
 .mii-library {
-  animation: fadeIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   display: grid;
   grid-template-areas: "sidebar miiList" "sidebar miiList";
   grid-template-columns: auto 1fr;
@@ -507,6 +565,7 @@ input[type=range] {
   font-size: min(max(1.2rem, 5vmax), 1.5rem);
   text-align: center;
   padding: 1rem;
+  flex: 1;
 }
 @media screen and (max-width: 550px) {
   .mii-library {

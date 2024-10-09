@@ -21,6 +21,7 @@ import {
 import { ScaleTab } from "../ui/tabs/Scale";
 import Modal from "../ui/components/Modal";
 import { playSound } from "./audio/SoundManager";
+import { AddButtonSounds } from "../util/AddButtonSounds";
 
 export enum MiiGender {
   Male,
@@ -75,17 +76,12 @@ export class MiiEditor {
     this.ready = false;
     this.errors = new Map();
 
+    // default male mii
     let initString =
       "AwEAAAAAAAAAAAAAgP9wmQAAAAAAAAAAAABNAGkAaQAAAAAAAAAAAAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMNn";
-    if (gender === MiiGender.Male) {
+    if (gender === MiiGender.Female) {
       initString =
-        // "AwEAAAAAAAAAAAAAgP9wmQAAAAAAAAAAAABNAGkAaQAAAAAAAAAAAAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMNn";
-        // "AwAAQIBhWERghMCA3W5Cj5VIdIKFVAAAamBUAHkAbABlAHIAAAAAAAAAAAAAAF5DIAB5AUJoRBggREUUgRITaA0AACkAUkhQVAB5AGwAZQByAAAAAAAAAAAAAAAAAI3d";
-        "AwCSMNjV7opqF2hGnVxmK8z7ZRITiAAAlGJBAHUAcwB0AGkAbgAGJrIAuQAAAFNAAAA+ByBnRBjzQmUUbRQTZg0AACkAUkclAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIpM";
-    } else if (gender === MiiGender.Female) {
-      // chacha12_1101
-      initString =
-        "AwAFMG0rAiKJRLe1nDWwN5i26X5uuAAAY0FjAGgAYQByAGwAaQBuAGUAAAAAAEwmApBlBttoRBggNEYUgRITYg0AACkAUkhQYwBoAGEAcgBsAGkAbgBlAAAAAAAAAHLb";
+        "AwEAAAAAAAAAAAAAgN8ZmgAAAAAAAAAAAQBNAGkAaQAAAAAAAAAAAAAAAAAAAEBAAAAMAQRoQxggNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFik";
     }
     if (init) initString = init;
     if (onShutdown) {
@@ -150,21 +146,23 @@ export class MiiEditor {
         nextRenderMode = RenderMode.Image;
         break;
     }
-    const renderModeToggle = new Html("button")
-      .class("render-mode-toggle")
-      .text(this.#renderModeText(nextRenderMode))
-      .on("click", () => {
-        renderModeToggle.text(this.#renderModeText(this.renderingMode));
-        switch (this.renderingMode) {
-          case RenderMode.Image:
-            this.renderingMode = RenderMode.ThreeJs;
-            break;
-          case RenderMode.ThreeJs:
-            this.renderingMode = RenderMode.Image;
-        }
-        this.render();
-      })
-      .appendTo(this.ui.mii);
+    const renderModeToggle = AddButtonSounds(
+      new Html("button")
+        .class("render-mode-toggle")
+        .text(this.#renderModeText(nextRenderMode))
+        .on("click", () => {
+          renderModeToggle.text(this.#renderModeText(this.renderingMode));
+          switch (this.renderingMode) {
+            case RenderMode.Image:
+              this.renderingMode = RenderMode.ThreeJs;
+              break;
+            case RenderMode.ThreeJs:
+              this.renderingMode = RenderMode.Image;
+          }
+          this.render();
+        })
+        .appendTo(this.ui.mii)
+    );
   }
   #setup2D() {
     /* renderImage */
