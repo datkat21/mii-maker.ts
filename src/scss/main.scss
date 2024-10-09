@@ -291,7 +291,6 @@ input {
       gap: 0.5rem;
       padding: 8px;
       .tab {
-        cursor: pointer;
         &.tab-square {
           min-width: 64px;
           min-height: 64px;
@@ -375,6 +374,7 @@ input {
       display: flex;
       align-items: center;
       border-radius: 12px;
+      cursor: pointer;
       &:hover {
         background-color: var(--hover);
       }

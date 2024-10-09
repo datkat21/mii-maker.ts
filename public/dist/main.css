@@ -276,7 +276,6 @@ input[type=range] {
     padding: 8px;
   }
   .ui-base .tab-list .tab {
-    cursor: pointer;
     width: auto !important;
     height: auto !important;
   }
@@ -353,6 +352,7 @@ input[type=range] {
   display: flex;
   align-items: center;
   border-radius: 12px;
+  cursor: pointer;
   overflow: visible;
   position: relative;
 }
