@@ -1,15 +1,17 @@
-import { MiiEditor } from "../class/MiiEditor";
+import { MusicManager } from "../class/audio/MusicManager";
+import { initSoundManager } from "../class/audio/SoundManager";
+import { Library } from "./pages/Library";
 
 export async function setupUi() {
-  let random = await fetch(
-    "https://mii-unsecure.ariankordi.net/mii_data_random"
-  ).then((j) => j.json());
+  let mm = new MusicManager();
 
-  console.log(random);
+  mm.loadSong("./assets/aud/miimakermusic.mp3", "mii_maker_music").then(() => {
+    mm.playSong("mii_maker_music", 0, 41.5, true, true, (source, gainNode) => {
+      gainNode.gain.setValueAtTime(-0.8, mm.audioContext.currentTime);
+    });
+  });
 
-  window.editor = new MiiEditor(
-    Math.round(Math.random()),
-    random.data
-    // "AwEADAAAAAAAAAAAiLTJC8K2/4sAAAAAAABDAGEAaQBkAGUAbgAAAAAAAAAAAD46gwBA0IdoQxYJNEUQgRITaA0AACkAUmVEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY+"
-  );
+  initSoundManager();
+
+  Library();
 }

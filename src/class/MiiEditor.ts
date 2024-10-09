@@ -2,7 +2,7 @@ import Mii from "../external/mii-js/mii";
 import { Buffer } from "../../node_modules/buffer/index";
 import Html from "@datkat21/html";
 import { TabList } from "../ui/components/TabList";
-import EditorTabIcons from "../constants/EditorTabIcons";
+import EditorIcons from "../constants/EditorIcons";
 import { CameraPosition, Mii3DScene } from "./3DScene";
 import { EyeTab } from "../ui/tabs/Eye";
 import { HeadTab } from "../ui/tabs/Head";
@@ -18,6 +18,9 @@ import {
   MiiMouthColorLipTable,
   MiiMouthColorTable,
 } from "../constants/ColorTables";
+import { ScaleTab } from "../ui/tabs/Scale";
+import Modal from "../ui/components/Modal";
+import { playSound } from "./audio/SoundManager";
 
 export enum MiiGender {
   Male,
@@ -52,9 +55,26 @@ export class MiiEditor {
     tabContent: Html;
   };
 
-  renderingMode: RenderMode;
+  dirty: boolean;
+  ready: boolean;
 
-  constructor(gender: MiiGender, init?: string) {
+  renderingMode: RenderMode;
+  onShutdown!: (mii: string, shutdownProperly?: boolean) => any | Promise<any>;
+  errors: Map<string, boolean>;
+
+  constructor(
+    gender: MiiGender,
+    onShutdown?: (
+      mii: string,
+      shutdownProperly?: boolean
+    ) => any | Promise<any>,
+    init?: string
+  ) {
+    this.#loadSoundLoop();
+    this.dirty = false;
+    this.ready = false;
+    this.errors = new Map();
+
     let initString =
       "AwEAAAAAAAAAAAAAgP9wmQAAAAAAAAAAAABNAGkAaQAAAAAAAAAAAAAAAAAAAEBAAAAhAQJoRBgmNEYUgRIXaA0AACkAUkhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMNn";
     if (gender === MiiGender.Male) {
@@ -68,8 +88,11 @@ export class MiiEditor {
         "AwAFMG0rAiKJRLe1nDWwN5i26X5uuAAAY0FjAGgAYQByAGwAaQBuAGUAAAAAAEwmApBlBttoRBggNEYUgRITYg0AACkAUkhQYwBoAGEAcgBsAGkAbgBlAAAAAAAAAHLb";
     }
     if (init) initString = init;
+    if (onShutdown) {
+      this.onShutdown = onShutdown;
+    }
 
-    this.renderingMode = RenderMode.Image;
+    this.renderingMode = RenderMode.ThreeJs;
 
     this.mii = new Mii(Buffer.from(initString, "base64") as unknown as Buffer);
 
@@ -78,13 +101,27 @@ export class MiiEditor {
     this.#setupUi();
   }
 
+  #loadSoundLoop() {
+    const check = () => {
+      if (this.ready) {
+        clearInterval(interval);
+        return;
+      }
+      playSound("wait");
+    };
+    check();
+    let interval = setInterval(check, 2000);
+  }
+
   async #setupUi() {
     this.icons = await fetch("./dist/icons.json").then((j) => j.json());
     this.ui = {} as unknown as any;
     this.#setupBase();
+    this.#updateCssVars();
     await this.#setupMii();
     this.#setupTabs();
-    this.render();
+    await this.render();
+    this.ready = true;
   }
   #setupBase() {
     this.ui.base = new Html("div").class("ui-base").appendTo("body");
@@ -99,6 +136,9 @@ export class MiiEditor {
   }
   async #setupMii() {
     this.ui.mii = new Html("div").class("mii-holder").appendTo(this.ui.base);
+    this.ui.mii.append(
+      new Html("div").html(EditorIcons.loading).class("loader", "active")
+    );
     let nextRenderMode = 0;
     switch (this.renderingMode) {
       case RenderMode.Image:
@@ -128,7 +168,7 @@ export class MiiEditor {
   }
   #setup2D() {
     /* renderImage */
-    new Html("img").appendTo(this.ui.mii);
+    new Html("img").attr({ crossorigin: "anonymous" }).appendTo(this.ui.mii);
   }
   async #setup3D() {
     this.ui.scene = new Mii3DScene(this.mii, this.ui.mii.elm);
@@ -137,6 +177,17 @@ export class MiiEditor {
     window.addEventListener("resize", () => {
       this.ui.scene.resize();
     });
+    this.ui.scene.focusCamera(CameraPosition.MiiHead);
+    this.ui.scene.getRendererElement().classList.add("ready");
+    this.ui.mii.qs(".loader")!.classOff("active");
+  }
+  #updateCssVars() {
+    this.ui.base.style({
+      "--eye-color": MiiEyeColorTable[this.mii.eyeColor],
+      "--icon-lip-color-top": MiiMouthColorLipTable[this.mii.mouthColor].top,
+      "--icon-lip-color-bottom":
+        MiiMouthColorLipTable[this.mii.mouthColor].bottom,
+    });
   }
   #setupTabs() {
     const TabInit = (Tab: TabBase, CameraFocusPart: CameraPosition) => {
@@ -144,19 +195,16 @@ export class MiiEditor {
         if (this.ui.scene) this.ui.scene.focusCamera(CameraFocusPart);
         await Tab({
           container: content,
-          callback: (mii) => {
+          callback: (mii, forceRender) => {
             this.mii = mii;
-            this.render();
-            this.ui.base.style({
-              "--eye-color": MiiEyeColorTable[this.mii.eyeColor],
-              "--icon-lip-color-top":
-                MiiMouthColorLipTable[this.mii.mouthColor].top,
-              "--icon-lip-color-bottom":
-                MiiMouthColorLipTable[this.mii.mouthColor].bottom,
-            });
+            // use of forceRender forces reload of the head in 3D mode
+            this.render(forceRender);
+            this.#updateCssVars();
+            this.dirty = true;
           },
           icons: this.icons,
           mii: this.mii,
+          editor: this,
         });
         if (this.ui.scene) this.ui.scene.resize();
       };
@@ -164,47 +212,47 @@ export class MiiEditor {
 
     const tabs = TabList([
       {
-        icon: EditorTabIcons.head,
+        icon: EditorIcons.head,
         select: TabInit(HeadTab, CameraPosition.MiiHead),
       },
       {
-        icon: EditorTabIcons.hair,
+        icon: EditorIcons.hair,
         select: TabInit(HairTab, CameraPosition.MiiHead),
       },
       {
-        icon: EditorTabIcons.eyebrows,
+        icon: EditorIcons.eyebrows,
         select: TabInit(EmptyTab, CameraPosition.MiiHead),
       },
       {
-        icon: EditorTabIcons.eyes,
+        icon: EditorIcons.eyes,
         select: TabInit(EyeTab, CameraPosition.MiiHead),
       },
       {
-        icon: EditorTabIcons.nose,
+        icon: EditorIcons.nose,
         select: TabInit(NoseTab, CameraPosition.MiiHead),
       },
       {
-        icon: EditorTabIcons.mouth,
+        icon: EditorIcons.mouth,
         select: TabInit(MouthTab, CameraPosition.MiiHead),
       },
       {
-        icon: EditorTabIcons.facialHair,
+        icon: EditorIcons.facialHair,
         select: TabInit(EmptyTab, CameraPosition.MiiHead),
       },
       {
-        icon: EditorTabIcons.mole,
+        icon: EditorIcons.mole,
         select: TabInit(EmptyTab, CameraPosition.MiiHead),
       },
       {
-        icon: EditorTabIcons.build,
-        select: TabInit(EmptyTab, CameraPosition.MiiFullBody),
+        icon: EditorIcons.scale,
+        select: TabInit(ScaleTab, CameraPosition.MiiFullBody),
       },
       {
-        icon: EditorTabIcons.favoriteColor,
+        icon: EditorIcons.favoriteColor,
         select: TabInit(FavoriteColorTab, CameraPosition.MiiFullBody),
       },
       {
-        icon: EditorTabIcons.details,
+        icon: EditorIcons.details,
         select: TabInit(MiscTab, CameraPosition.MiiFullBody),
       },
     ]);
@@ -213,7 +261,7 @@ export class MiiEditor {
     this.ui.base.appendMany(tabs.list, tabs.content);
   }
 
-  async render() {
+  async render(forceReloadHead: boolean = true) {
     switch (this.renderingMode) {
       case RenderMode.Image:
         if (this.ui.mii.qs("img") === null) {
@@ -226,10 +274,8 @@ export class MiiEditor {
           .qs("img")
           ?.style({ display: "block" })
           .attr({
-            src: `https://mii-unsecure.ariankordi.net/miis/image.png?data=${Buffer.from(
-              this.mii.encode()
-            ).toString(
-              "base64"
+            src: `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
+              Buffer.from(this.mii.encode()).toString("base64")
             )}&shaderType=2&type=face&width=260&verifyCharInfo=0`,
           });
         break;
@@ -242,8 +288,44 @@ export class MiiEditor {
         }
         this.ui.mii.qs("canvas")?.style({ display: "block" });
         this.ui.scene.mii = this.mii;
-        this.ui.scene.updateMiiHead();
+        if (forceReloadHead) {
+          // reload head and body
+          this.ui.scene.updateMiiHead();
+        } else {
+          // only reload body
+          this.ui.scene.updateBody();
+        }
         break;
     }
+  }
+  shutdown(shouldSave: boolean = true) {
+    if (shouldSave) {
+      if (Array.from(this.errors.values()).find((i) => i === true)) {
+        let errorList = [];
+        for (const [id, value] of this.errors.entries()) {
+          if (value === true) errorList.push(id);
+        }
+        Modal.alert(
+          "Error",
+          "Will not save because there are errors in the following items:\n\n" +
+            errorList.map((e) => `• ${e}`).join("\n")
+        );
+        return;
+      }
+    }
+
+    this.ui.base.classOn("closing");
+    setTimeout(() => {
+      if (this.ui.mii.qs("canvas")) {
+        this.ui.scene.shutdown();
+      }
+      this.ui.base.cleanup();
+      if (this.onShutdown) {
+        this.onShutdown(
+          Buffer.from(this.mii.encode()).toString("base64"),
+          shouldSave
+        );
+      }
+    }, 500);
   }
 }

@@ -5,7 +5,7 @@ import {
   MiiPagedFeatureSet,
   type FeatureSetIconItem,
 } from "../components/MiiPagedFeatureSet";
-import EditorTabIcons from "../../constants/EditorTabIcons";
+import EditorIcons from "../../constants/EditorIcons";
 import {
   MiiHairColorTable,
   MiiSkinColorTable,
@@ -41,8 +41,8 @@ export function HairTab(data: TabRenderInit) {
           items: [
             {
               type: FeatureSetType.Switch,
-              iconOff: EditorTabIcons.positionHairFlip,
-              iconOn: EditorTabIcons.positionHairFlipped,
+              iconOff: EditorIcons.positionHairFlip,
+              iconOn: EditorIcons.positionHairFlipped,
               property: "flipHair",
             },
           ],

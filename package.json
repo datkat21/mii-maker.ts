@@ -2,6 +2,10 @@
   "name": "mii-maker-real",
   "module": "build.ts",
   "type": "module",
+  "scripts": {
+    "build-ts": "bun build.ts",
+    "serve": "bunx serve"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -27,6 +31,8 @@
     "fast-xml-parser": "^4.5.0",
     "gsap": "^3.12.5",
     "jbinary": "^2.1.5",
+    "jszip": "^3.10.1",
+    "localforage": "^1.10.0",
     "md5": "^2.3.0",
     "sass": "^1.79.4",
     "three": "^0.169.0",

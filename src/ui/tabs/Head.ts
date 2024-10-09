@@ -5,7 +5,7 @@ import {
   MiiPagedFeatureSet,
   type FeatureSetIconItem,
 } from "../components/MiiPagedFeatureSet";
-import EditorTabIcons from "../../constants/EditorTabIcons";
+import EditorIcons from "../../constants/EditorIcons";
 import { MiiSkinColorTable } from "../../constants/ColorTables";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import { ArrayNum } from "../../util/NumberArray";
@@ -18,7 +18,7 @@ export function HeadTab(data: TabRenderInit) {
       onChange: data.callback,
       entries: {
         faceType: {
-          label: EditorTabIcons.face,
+          label: EditorIcons.face,
           items: ArrayNum(12).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
@@ -26,7 +26,7 @@ export function HeadTab(data: TabRenderInit) {
           })),
         },
         makeupType: {
-          label: EditorTabIcons.face_makeup,
+          label: EditorIcons.face_makeup,
           items: ArrayNum(12).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
@@ -34,7 +34,7 @@ export function HeadTab(data: TabRenderInit) {
           })),
         },
         wrinklesType: {
-          label: EditorTabIcons.face_wrinkles,
+          label: EditorIcons.face_wrinkles,
           items: ArrayNum(12).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,

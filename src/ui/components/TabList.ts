@@ -1,5 +1,6 @@
 import Html from "@datkat21/html";
 import gsap from "gsap";
+import { AddButtonSounds } from "../../util/AddButtonSounds";
 
 export interface Tab {
   icon: string;
@@ -15,25 +16,25 @@ export function TabList(tabs: Tab[], type: TabListType = TabListType.Square) {
   const tabList = new Html("div").class("tab-list");
   const tabContent = new Html("div").class("tab-content");
 
+  function selectTab(tabElm: Html, tabSelect: (tabContent: Html) => any) {
+    tabList.qsa(".tab")!.forEach((tab) => tab?.classOff("active"));
+    tabElm.classOn("active");
+    // requestAnimationFrame(async () => {
+    // let tBCR = tabContent.elm.offsetHeight;
+    tabContent.clear();
+    tabSelect(tabContent);
+  }
+
   for (const tab of tabs) {
-    let tabElm = new Html("div")
-      .classOn("tab")
-      .html(tab.icon)
-      .on("click", async () => {
-        tabList.qsa(".tab")!.forEach((tab) => tab?.classOff("active"));
-        tabElm.classOn("active");
-        // requestAnimationFrame(async () => {
-        // let tBCR = tabContent.elm.offsetHeight;
-        tabContent.clear();
-        await tab.select(tabContent);
-        // requestAnimationFrame(() => {
-        // let nBCR = tabContent.elm.offsetHeight;
-        // console.log(tBCR, nBCR);
-        // gsap.fromTo(tabContent.elm, { minHeight: tBCR }, { minHeight: nBCR });
-        // });
-        // });
-      })
-      .appendTo(tabList);
+    let tabElm = AddButtonSounds(
+      new Html("div")
+        .classOn("tab")
+        .html(tab.icon)
+        .on("click", async () => {
+          selectTab(tabElm, tab.select);
+        })
+        .appendTo(tabList)
+    );
     switch (type) {
       case TabListType.Square:
         tabElm.classOn("tab-square");
@@ -44,7 +45,11 @@ export function TabList(tabs: Tab[], type: TabListType = TabListType.Square) {
     }
   }
 
-  (tabList.elm.children[0]! as HTMLElement).click();
+  selectTab(
+    Html.from(tabList.elm.children[0]! as HTMLElement)!,
+    tabs[0].select
+  );
+  // (tabList.elm.children[0]! as HTMLElement).click();
 
   return { list: tabList, content: tabContent };
 }
