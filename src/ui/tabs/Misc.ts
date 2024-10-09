@@ -48,6 +48,7 @@ export function MiscTab(data: TabRenderInit) {
                   callback() {},
                 }
               );
+            else data.editor.shutdown();
             // else
             //   Modal.modal(
             //     "Quitting Editor",

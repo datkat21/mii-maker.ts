@@ -57175,6 +57175,8 @@ function MiscTab(data) {
         callback() {
         }
       });
+    else
+      data.editor.shutdown();
   })), Input("Name", data.mii.miiName, (name) => setProp("miiName", name), (name) => $Buffer.from(name, "utf16le").length <= 20 && $Buffer.from(name, "utf16le").length !== 0, data.editor), Input("Creator", data.mii.creatorName, (creator) => setProp("creatorName", creator), (creator) => $Buffer.from(creator, "utf16le").length <= 20 && $Buffer.from(creator, "utf16le").length !== 0, data.editor)));
 }
 
@@ -57794,5 +57796,5 @@ async function setupUi() {
 setupUi();
 window.buffer = $Buffer;
 
-//# debugId=DE58503998981C7364756E2164756E21
+//# debugId=FE67E08734439EA964756E2164756E21
 //# sourceMappingURL=main.js.map
