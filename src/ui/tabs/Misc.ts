@@ -7,6 +7,11 @@ import { Input } from "../components/Input";
 import Mii from "../../external/mii-js/mii";
 import Modal from "../components/Modal";
 import { AddButtonSounds } from "../../util/AddButtonSounds";
+import {
+  FeatureSetType,
+  MiiPagedFeatureSet,
+} from "../components/MiiPagedFeatureSet";
+import EditorIcons from "../../constants/EditorIcons";
 
 export function MiscTab(data: TabRenderInit) {
   let tmpMii = new Mii(data.mii.encode());
@@ -48,7 +53,7 @@ export function MiscTab(data: TabRenderInit) {
                   callback() {},
                 }
               );
-            else data.editor.shutdown();
+            else data.editor.shutdown(false);
             // else
             //   Modal.modal(
             //     "Quitting Editor",
@@ -84,11 +89,41 @@ export function MiscTab(data: TabRenderInit) {
           // set
           (creator) => setProp("creatorName", creator),
           // validate
-          (creator) =>
-            Buf.from(creator, "utf16le").length <= 0x14 &&
-            Buf.from(creator, "utf16le").length !== 0,
+          (creator) => Buf.from(creator, "utf16le").length <= 0x14,
           data.editor
-        )
+        ),
+        // cheap hack to get a special featureset item with a label
+        new Html("div")
+          .class("input-group")
+          .style({ height: "39px" })
+          .appendMany(
+            new Html("label").text("Gender"),
+            MiiPagedFeatureSet({
+              mii: data.mii,
+              onChange: data.callback,
+              entries: {
+                gender: {
+                  label: "Gender",
+                  items: [
+                    {
+                      type: FeatureSetType.Switch,
+                      iconOff: EditorIcons.genderMale,
+                      iconOn: EditorIcons.genderFemale,
+                      property: "gender",
+                      isNumber: true,
+                      forceRender: false,
+                    },
+                  ],
+                },
+              },
+            })
+              .classOn("no-pad")
+              .style({
+                display: "inline-flex",
+                width: "max-content",
+                height: "max-content",
+              })
+          )
       )
   );
 }

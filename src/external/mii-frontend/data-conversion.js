@@ -3,6 +3,9 @@
 // Now, even though Pikmin Bloom is in Unity and not developed by Nintendo, there's still one other reference to the name. The Coral API endpoint "me.json" has a child in a "mii" object called "storeData", containing another child named simply "3" with 96-byte long Base64 data. However, there is another element called "coreData" containing a child named "4" with 48-byte long Base64 data. SO, there you go: Ver3StoreData, and Ver4CoreData.
 // that's why for simplicity, 3DS/Wii U format will be reffered to as "Ver3" and Switch/Studio as "Ver4". idk what wii is but it will be 1
 
+import "./all-kaitai-structs";
+import KaitaiStream from "./kaitai-stream.min.js";
+
 // NOTE: "to" functions need to be defined in conersionMethods
 export const supportedFormats = [
   {
@@ -71,144 +74,140 @@ export const supportedFormats = [
 const DEFAULT_NAME_IF_NONE = "Mii"; // blanco api sets mii studio miis' names to this
 
 // conversion methods for supportedFormats are defined here instead of window now
-let conversionMethods = {};
-// convert fields from ver3 and below to be compatible with switch/studio
-// the only fields that need to be made compatible, however,
-// , are the colors to convert them to the CommonColor type
-conversionMethods.convertVer3FieldsToVer4 = (data) => {
-  // cannot just set these directly, have to set the properties
-  // kaitai structs use defineProperty to make these fetch from bitshifts
+export const conversionMethods = {
+  // convert fields from ver3 and below to be compatible with switch/studio
+  // the only fields that need to be made compatible, however,
+  // , are the colors to convert them to the CommonColor type
+  convertVer3FieldsToVer4: (data) => {
+    // cannot just set these directly, have to set the properties
+    // kaitai structs use defineProperty to make these fetch from bitshifts
 
-  // NOTE: while there is a table to map ver3 colors to the CommonColor type...
-  // ... mii2studio took a shortcut, which is also what is being done here
-  // due to the fact that in the common color tables, there is a contiguous
-  // section of ver3-compatible colors so this "bumps them" to that section
-  Object.defineProperty(data, "facialHairColor", {
-    value: data.facialHairColor === 0 ? 8 : data.facialHairColor,
-  });
-  Object.defineProperty(data, "eyeColor", {
-    value: data.eyeColor + 8,
-  });
-  Object.defineProperty(data, "eyebrowColor", {
-    value: data.eyebrowColor === 0 ? 8 : data.eyebrowColor,
-  });
-  Object.defineProperty(data, "glassesColor", {
-    value:
-      data.glassesColor === 0
-        ? 8
-        : data.glassesColor < 6
-        ? data.glassesColor + 13
-        : 0,
-  });
-  Object.defineProperty(data, "hairColor", {
-    value: data.hairColor === 0 ? 8 : data.hairColor,
-  });
-  Object.defineProperty(data, "mouthColor", {
-    value: data.mouthColor < 4 ? data.mouthColor + 19 : 0,
-  });
-  // NOTE: you cannot do the same vice-versa to convert ver4 colors back
-  // ver4 also has new glass types, and...
-  // ... faceline/skin color is not mapped (ver3 ones work on ver4)
-};
+    // NOTE: while there is a table to map ver3 colors to the CommonColor type...
+    // ... mii2studio took a shortcut, which is also what is being done here
+    // due to the fact that in the common color tables, there is a contiguous
+    // section of ver3-compatible colors so this "bumps them" to that section
+    Object.defineProperty(data, "facialHairColor", {
+      value: data.facialHairColor === 0 ? 8 : data.facialHairColor,
+    });
+    Object.defineProperty(data, "eyeColor", {
+      value: data.eyeColor + 8,
+    });
+    Object.defineProperty(data, "eyebrowColor", {
+      value: data.eyebrowColor === 0 ? 8 : data.eyebrowColor,
+    });
+    Object.defineProperty(data, "glassesColor", {
+      value:
+        data.glassesColor === 0
+          ? 8
+          : data.glassesColor < 6
+          ? data.glassesColor + 13
+          : 0,
+    });
+    Object.defineProperty(data, "hairColor", {
+      value: data.hairColor === 0 ? 8 : data.hairColor,
+    });
+    Object.defineProperty(data, "mouthColor", {
+      value: data.mouthColor < 4 ? data.mouthColor + 19 : 0,
+    });
+    // NOTE: you cannot do the same vice-versa to convert ver4 colors back
+    // ver4 also has new glass types, and...
+    // ... faceline/skin color is not mapped (ver3 ones work on ver4)
+  },
+  // converting fields from ver4 to ver3, like vice versa,
+  // involves reassigning colors, from CommonColor to the respective ver3 types
+  // one of the differences is that this is also reassigning glass type as ver4 has more
+  // NOTE: this is currently making use of tables from MiiPort:
+  // https://github.com/Genwald/MiiPort/blob/4ee38bbb8aa68a2365e9c48d59d7709f760f9b5d/include/convert_mii.h#L18
+  convertVer4FieldsToVer3: (data) => {
+    // // these SHOULD be extracted from nn::mii, however, AFAIK these are located...
+    // ... in the CommonColorTable as four uint8s after the two Color3s
+    const ToVer3GlassTypeTable = [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 1, 3, 7, 7, 6, 7, 8, 7, 7,
+    ];
+    const ToVer3HairColorTable = [
+      0, 1, 2, 3, 4, 5, 6, 7, 0, 4, 3, 5, 4, 4, 6, 2, 0, 6, 4, 3, 2, 2, 7, 3, 2,
+      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 4, 4, 0, 0,
+      4, 4, 4, 4, 4, 4, 0, 0, 0, 4, 4, 4, 4, 4, 4, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4,
+      5, 7, 5, 7, 7, 7, 7, 7, 6, 7, 7, 7, 7, 7, 3, 7, 7, 7, 7, 7, 0, 4, 4, 4, 4,
+    ];
+    const ToVer3EyeColorTable = [
+      0, 2, 2, 2, 1, 3, 2, 3, 0, 1, 2, 3, 4, 5, 2, 2, 4, 2, 1, 2, 2, 2, 2, 2, 2,
+      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 4, 4, 4, 4, 4, 4, 4, 1, 0, 4,
+      4, 4, 4, 4, 4, 4, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1,
+    ];
+    const ToVer3MouthColorTable = [
+      4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 1, 4, 4, 4, 0, 1, 2, 3, 4, 4,
+      2, 3, 3, 4, 4, 4, 4, 1, 4, 4, 2, 3, 3, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 4, 4,
+      4, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3,
+      4, 4, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 4, 0, 3, 3, 3, 3, 4, 3, 3, 3, 3,
+    ];
+    const ToVer3GlassColorTable = [
+      0, 1, 1, 1, 5, 1, 1, 4, 0, 5, 1, 1, 3, 5, 1, 2, 3, 4, 5, 4, 2, 2, 4, 4, 2,
+      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5,
+    ];
+    const ToVer3FacelineColorTable = [0, 1, 2, 3, 4, 5, 0, 1, 5, 5];
 
-// converting fields from ver4 to ver3, like vice versa,
-// involves reassigning colors, from CommonColor to the respective ver3 types
-// one of the differences is that this is also reassigning glass type as ver4 has more
-// NOTE: this is currently making use of tables from MiiPort:
-// https://github.com/Genwald/MiiPort/blob/4ee38bbb8aa68a2365e9c48d59d7709f760f9b5d/include/convert_mii.h#L18
-conversionMethods.convertVer4FieldsToVer3 = (data) => {
-  // // these SHOULD be extracted from nn::mii, however, AFAIK these are located...
-  // ... in the CommonColorTable as four uint8s after the two Color3s
-  const ToVer3GlassTypeTable = [
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 1, 3, 7, 7, 6, 7, 8, 7, 7,
-  ];
-  const ToVer3HairColorTable = [
-    0, 1, 2, 3, 4, 5, 6, 7, 0, 4, 3, 5, 4, 4, 6, 2, 0, 6, 4, 3, 2, 2, 7, 3, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 4, 4, 0, 0,
-    4, 4, 4, 4, 4, 4, 0, 0, 0, 4, 4, 4, 4, 4, 4, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4,
-    5, 7, 5, 7, 7, 7, 7, 7, 6, 7, 7, 7, 7, 7, 3, 7, 7, 7, 7, 7, 0, 4, 4, 4, 4,
-  ];
-  const ToVer3EyeColorTable = [
-    0, 2, 2, 2, 1, 3, 2, 3, 0, 1, 2, 3, 4, 5, 2, 2, 4, 2, 1, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 4, 4, 4, 4, 4, 4, 4, 1, 0, 4,
-    4, 4, 4, 4, 4, 4, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-    3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1,
-  ];
-  const ToVer3MouthColorTable = [
-    4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 1, 4, 4, 4, 0, 1, 2, 3, 4, 4,
-    2, 3, 3, 4, 4, 4, 4, 1, 4, 4, 2, 3, 3, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 4, 4,
-    4, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3,
-    4, 4, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 4, 0, 3, 3, 3, 3, 4, 3, 3, 3, 3,
-  ];
-  const ToVer3GlassColorTable = [
-    0, 1, 1, 1, 5, 1, 1, 4, 0, 5, 1, 1, 3, 5, 1, 2, 3, 4, 5, 4, 2, 2, 4, 4, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-    5, 5, 5, 5, 5, 5, 5, 5, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5,
-  ];
-  const ToVer3FacelineColorTable = [0, 1, 2, 3, 4, 5, 0, 1, 5, 5];
-
-  data.glassesType = ToVer3GlassTypeTable[data.glassesType];
-  data.hairColor = ToVer3HairColorTable[data.hairColor];
-  // NOTE: even though the rest of the beard fields are named differently
-  // in Gen3Studio, this one for beard color is the same there and in all
-  data.facialHairColor = ToVer3HairColorTable[data.facialHairColor];
-  data.eyeColor = ToVer3EyeColorTable[data.eyeColor];
-  data.mouthColor = ToVer3MouthColorTable[data.mouthColor];
-  data.glassesColor = ToVer3GlassColorTable[data.glassesColor];
-  data.faceColor = ToVer3FacelineColorTable[data.faceColor];
-};
-
-// apply extra "extension" fields at the end of this struct
-// back to the actual fields since the extension fields are ver4
-conversionMethods.useNfpStoreDataExtentionFieldsForVer4 = (data) => {
-  Object.defineProperty(data, "faceColor", {
-    value: data.extFacelineColor,
-  });
-  Object.defineProperty(data, "hairColor", {
-    value: data.extHairColor,
-  });
-  Object.defineProperty(data, "eyeColor", {
-    value: data.extEyeColor,
-  });
-  Object.defineProperty(data, "eyebrowColor", {
-    value: data.extEyebrowColor,
-  });
-  Object.defineProperty(data, "mouthColor", {
-    value: data.extMouthColor,
-  });
-  Object.defineProperty(data, "facialHairColor", {
-    value: data.extBeardColor,
-  });
-  Object.defineProperty(data, "glassesColor", {
-    value: data.extGlassColor,
-  });
-  Object.defineProperty(data, "glassesType", {
-    value: data.extGlassType,
-  });
-};
-
-// add 3 to eyebrow vertical
-conversionMethods.correctFromVer4CoreDataFields = (_, input) => {
-  input.eyebrowVertical += 3;
-  /*
+    data.glassesType = ToVer3GlassTypeTable[data.glassesType];
+    data.hairColor = ToVer3HairColorTable[data.hairColor];
+    // NOTE: even though the rest of the beard fields are named differently
+    // in Gen3Studio, this one for beard color is the same there and in all
+    data.facialHairColor = ToVer3HairColorTable[data.facialHairColor];
+    data.eyeColor = ToVer3EyeColorTable[data.eyeColor];
+    data.mouthColor = ToVer3MouthColorTable[data.mouthColor];
+    data.glassesColor = ToVer3GlassColorTable[data.glassesColor];
+    data.faceColor = ToVer3FacelineColorTable[data.faceColor];
+  },
+  // apply extra "extension" fields at the end of this struct
+  // back to the actual fields since the extension fields are ver4
+  useNfpStoreDataExtentionFieldsForVer4: (data) => {
+    Object.defineProperty(data, "faceColor", {
+      value: data.extFacelineColor,
+    });
+    Object.defineProperty(data, "hairColor", {
+      value: data.extHairColor,
+    });
+    Object.defineProperty(data, "eyeColor", {
+      value: data.extEyeColor,
+    });
+    Object.defineProperty(data, "eyebrowColor", {
+      value: data.extEyebrowColor,
+    });
+    Object.defineProperty(data, "mouthColor", {
+      value: data.extMouthColor,
+    });
+    Object.defineProperty(data, "facialHairColor", {
+      value: data.extBeardColor,
+    });
+    Object.defineProperty(data, "glassesColor", {
+      value: data.extGlassColor,
+    });
+    Object.defineProperty(data, "glassesType", {
+      value: data.extGlassType,
+    });
+  },
+  // add 3 to eyebrow vertical
+  correctFromVer4CoreDataFields: (_, input) => {
+    input.eyebrowVertical += 3;
+    /*
 Object.defineProperty(output, 'eyebrowVertical', {
   value: (input.eyebrowVertical + 3)
 });
 */
-  // when using this, it says attempt to change the value of a readonly property
-};
-
-// the method below is used to encode studio and switch charinfo
-// by more or less directly mapping the u8 fields in the struct to a new array
-// NOTE: only supports strings (TO UTF-16LE ONLY!!!), lists, and ofc uint8
-conversionMethods.encodeKaitaiStructToUint8Array = (struct) => {
-  // append all keys into this array
-  // which will then become a uint8array
-  let structArray = [];
-  // NOTE: NOTE: kaitai private fields are NOT:
-  // ... numbers, arrays, or strings. we can get away with switch()
-  /*for(const key in struct) {
+    // when using this, it says attempt to change the value of a readonly property
+  },
+  // the method below is used to encode studio and switch charinfo
+  // by more or less directly mapping the u8 fields in the struct to a new array
+  // NOTE: only supports strings (TO UTF-16LE ONLY!!!), lists, and ofc uint8
+  encodeKaitaiStructToUint8Array: (struct) => {
+    // append all keys into this array
+    // which will then become a uint8array
+    let structArray = [];
+    // NOTE: NOTE: kaitai private fields are NOT:
+    // ... numbers, arrays, or strings. we can get away with switch()
+    /*for(const key in struct) {
   // remove all private fields so that the object
   // represents only the struct fields in order
   if(key.startsWith('_')) {
@@ -221,141 +220,133 @@ conversionMethods.encodeKaitaiStructToUint8Array = (struct) => {
     structArray.push(struct[key]);
 }*/
 
-  for (const key in struct) {
-    // add to array based on the type
-    // value will be changed for string case
-    let value = struct[key];
-    switch (typeof value) {
-      case "number":
-        // assuming this is a uint8, pushing it
-        structArray.push(value);
-        break;
-      case "boolean":
-        // there are never booleans in these fields natively
-        // but there are when they are set from another struct
-        structArray.push(Number(value));
-        break;
-      case "string":
-        // NOTE: assuming NAME is ALWAYS 10 CHARACTER UTF-16 STRING
-        // IMPORTANT!!!!: in Switch CharInfo, the name is (10+1) characters, where the last character is for padding
-        // I THINK!!!! that Switch CharInfo is the only (for storage/transmission) format with padding
-        // BECAUSE of this, for compatibility with other types...
-        // ... this will be using and serializing a 10 character name
-        // this WORKS in "gen3_switchgame.ksy" but NOT!!!! "miidata_swi.ksy" by HEYimHeroic
-        const stringBytes = new Uint8Array(new ArrayBuffer(20));
-        const stringBytesView = new DataView(stringBytes.buffer);
-        for (let i = 0; i < 10; i++) {
-          // assuming name is always 10 characters even if it has padding
-          const u16Offset = i * 2;
-          stringBytesView.setUint16(u16Offset, value.charCodeAt(i), true); // little-endian UTF-16
-        }
-        // encode string to utf-16le byte array
-        value = [...stringBytes];
-      // FALL THROUGH and add this as an array
-      case "object":
-        // actually, only arrays
-        if (!(value instanceof Array)) {
+    for (const key in struct) {
+      // add to array based on the type
+      // value will be changed for string case
+      let value = struct[key];
+      switch (typeof value) {
+        case "number":
+          // assuming this is a uint8, pushing it
+          structArray.push(value);
+          break;
+        case "boolean":
+          // there are never booleans in these fields natively
+          // but there are when they are set from another struct
+          structArray.push(Number(value));
+          break;
+        case "string":
+          // NOTE: assuming NAME is ALWAYS 10 CHARACTER UTF-16 STRING
+          // IMPORTANT!!!!: in Switch CharInfo, the name is (10+1) characters, where the last character is for padding
+          // I THINK!!!! that Switch CharInfo is the only (for storage/transmission) format with padding
+          // BECAUSE of this, for compatibility with other types...
+          // ... this will be using and serializing a 10 character name
+          // this WORKS in "gen3_switchgame.ksy" but NOT!!!! "miidata_swi.ksy" by HEYimHeroic
+          const stringBytes = new Uint8Array(new ArrayBuffer(20));
+          const stringBytesView = new DataView(stringBytes.buffer);
+          for (let i = 0; i < 10; i++) {
+            // assuming name is always 10 characters even if it has padding
+            const u16Offset = i * 2;
+            stringBytesView.setUint16(u16Offset, value.charCodeAt(i), true); // little-endian UTF-16
+          }
+          // encode string to utf-16le byte array
+          value = [...stringBytes];
+        // FALL THROUGH and add this as an array
+        case "object":
+          // actually, only arrays
+          if (!(value instanceof Array)) {
+            if (!key.startsWith("_"))
+              console.warn("unknown field type on key object: " + key);
+            continue;
+          }
+          // this is an array, so push each element
+          for (v of value) structArray.push(v);
+          break;
+        default:
           if (!key.startsWith("_"))
-            console.warn("unknown field type on key object: " + key);
-          continue;
-        }
-        // this is an array, so push each element
-        for (v of value) structArray.push(v);
-        break;
-      default:
-        if (!key.startsWith("_"))
-          console.warn("unknown field type on key: " + key);
-      // all other types are ignored
+            console.warn("unknown field type on key: " + key);
+        // all other types are ignored
+      }
     }
-  }
-  // array of ints representing studio data
-  //const structArray = Object.values(struct);
-  // return as a uint8array for consistency
-  return new Uint8Array(structArray);
-  // NOTE: could be a uint8array, however...
-  // ... apparently, in order to encode to hex it has to be an array anyway
-};
-// encodeSwitchCharInfo is mostly just a thunk using the
-// above function to encode to uint8array, but generating
-// a random create ID (in this kaitai called "unknownData") first
-conversionMethods.encodeSwitchCharInfo = (struct) => {
-  // if create id is not null, then fill it with randomness
-  if (!struct.unknownData || isArrayNull(struct.unknownData)) {
-    for (let i = 0; i < 16; i++) {
-      struct.unknownData[i] = Math.floor(Math.random() * 256);
+    // array of ints representing studio data
+    //const structArray = Object.values(struct);
+    // return as a uint8array for consistency
+    return new Uint8Array(structArray);
+    // NOTE: could be a uint8array, however...
+    // ... apparently, in order to encode to hex it has to be an array anyway
+  },
+  // encodeSwitchCharInfo is mostly just a thunk using the
+  // above function to encode to uint8array, but generating
+  // a random create ID (in this kaitai called "unknownData") first
+  encodeSwitchCharInfo: (struct) => {
+    // if create id is not null, then fill it with randomness
+    if (!struct.unknownData || isArrayNull(struct.unknownData)) {
+      for (let i = 0; i < 16; i++) {
+        struct.unknownData[i] = Math.floor(Math.random() * 256);
+      }
+      // from miiport: These two leftmost bits must be 0b10 for the ID to be valid.
+      struct.unknownData[8] &= 0b10111111; // Clear the 7th bit
+      struct.unknownData[8] |= 0b10000000; // Set the 8th bit
     }
-    // from miiport: These two leftmost bits must be 0b10 for the ID to be valid.
-    struct.unknownData[8] &= 0b10111111; // Clear the 7th bit
-    struct.unknownData[8] |= 0b10000000; // Set the 8th bit
-  }
-  // fill in mii name if it is null
-  if (!struct.miiName || isStringNull(struct.miiName))
-    struct.miiName = DEFAULT_NAME_IF_NONE;
-  // for whatever reason they do not want any characters
-  // to be in the name after the null terminator
-  struct.miiName = removeEverythingAfterNullTerminator(struct.miiName);
-  // then thunk to encode kaitai function
-  return conversionMethods.encodeKaitaiStructToUint8Array(struct);
-};
+    // fill in mii name if it is null
+    if (!struct.miiName || isStringNull(struct.miiName))
+      struct.miiName = DEFAULT_NAME_IF_NONE;
+    // for whatever reason they do not want any characters
+    // to be in the name after the null terminator
+    struct.miiName = removeEverythingAfterNullTerminator(struct.miiName);
+    // then thunk to encode kaitai function
+    return conversionMethods.encodeKaitaiStructToUint8Array(struct);
+  },
+  // the methods below remap inconsistently named fields in gen3_studio.ksy from the original mii2studio
+  // as the fields usually prefixed "facialHair" in the other structs are instead prefixed "beard" here
+  // this will map the fields FROM the studio struct TO another one
+  gen3studioDefineFacialHairFromBeardFields: (output, inputOptional) => {
+    // if we are only acting on one struct then we will use output for both
+    let input = inputOptional;
+    if (input === undefined) input = output;
 
-// the methods below remap inconsistently named fields in gen3_studio.ksy from the original mii2studio
-// as the fields usually prefixed "facialHair" in the other structs are instead prefixed "beard" here
+    // if the studio fields are properly named according to the others then skip
+    if (
+      input.facialHairBeard !== undefined ||
+      // ... or, if this is somehow already the same studio struct?!
+      output.beardGoatee !== undefined
+    )
+      return;
 
-// this will map the fields FROM the studio struct TO another one
-conversionMethods.gen3studioDefineFacialHairFromBeardFields = (
-  output,
-  inputOptional
-) => {
-  // if we are only acting on one struct then we will use output for both
-  let input = inputOptional;
-  if (input === undefined) input = output;
-
-  // if the studio fields are properly named according to the others then skip
-  if (
-    input.facialHairBeard !== undefined ||
-    // ... or, if this is somehow already the same studio struct?!
-    output.beardGoatee !== undefined
-  )
-    return;
-
-  Object.defineProperty(output, "facialHairBeard", {
-    value: input.beardGoatee,
-  });
-  Object.defineProperty(output, "facialHairSize", {
-    value: input.beardSize,
-  });
-  Object.defineProperty(output, "facialHairMustache", {
-    value: input.beardMustache,
-  });
-  Object.defineProperty(output, "facialHairVertical", {
-    value: input.beardVertical,
-  });
-};
-// this maps the fields TO the studio struct FROM any other one
-conversionMethods.gen3studioDefineBeardFromFacialHairFields = (
-  output,
-  input
-) => {
-  // if the studio fields are properly named according to the others then skip
-  if (
-    output.facialHairBeard !== undefined ||
-    // ... or, if this is somehow already the same studio struct?!
-    input.beardGoatee !== undefined
-  )
-    return;
-
-  // erroneously prefixed "beard" in studio when other structs use "facialHair"
-  output.beardGoatee = input.facialHairBeard;
-  output.beardSize = input.facialHairSize;
-  output.beardMustache = input.facialHairMustache;
-  output.beardVertical = input.facialHairVertical;
-};
-
-conversionMethods.forceEnableCopyingIfUndefined = (output, input) => {
-  if (input.copying === undefined)
-    Object.defineProperty(output, "copying", {
-      value: true,
+    Object.defineProperty(output, "facialHairBeard", {
+      value: input.beardGoatee,
     });
+    Object.defineProperty(output, "facialHairSize", {
+      value: input.beardSize,
+    });
+    Object.defineProperty(output, "facialHairMustache", {
+      value: input.beardMustache,
+    });
+    Object.defineProperty(output, "facialHairVertical", {
+      value: input.beardVertical,
+    });
+  },
+  // this maps the fields TO the studio struct FROM any other one
+  gen3studioDefineBeardFromFacialHairFields: (output, input) => {
+    // if the studio fields are properly named according to the others then skip
+    if (
+      output.facialHairBeard !== undefined ||
+      // ... or, if this is somehow already the same studio struct?!
+      input.beardGoatee !== undefined
+    )
+      return;
+
+    // erroneously prefixed "beard" in studio when other structs use "facialHair"
+    output.beardGoatee = input.facialHairBeard;
+    output.beardSize = input.facialHairSize;
+    output.beardMustache = input.facialHairMustache;
+    output.beardVertical = input.facialHairVertical;
+  },
+  forceEnableCopyingIfUndefined: (output, input) => {
+    if (input.copying === undefined)
+      Object.defineProperty(output, "copying", {
+        value: true,
+      });
+  },
 };
 
 // current name of studio kaitai struct class being used
@@ -364,7 +355,7 @@ const ver3Format = supportedFormats.find(
   (f) => f.className === "Gen2Wiiu3dsMiitomo"
 );
 
-const handleConvertDetailsToggle = (event) => {
+export const handleConvertDetailsToggle = (event) => {
   if (
     !event.target.open || // not toggled open? ignore
     // or already revealed, we do not need to do anything
@@ -740,8 +731,8 @@ const mapObjectFieldsOneToOne = (src, dest) => {
 // third arugment, inupt format name, is optional
 // if not provided then the size is used to auto detect
 // length of obfuscated studio data
-const STUDIO_OBFUSCATED_LENGTH = 47;
-const convertDataToType = (
+export const STUDIO_OBFUSCATED_LENGTH = 47;
+export const convertDataToType = (
   data,
   outputFormat,
   inputFormatName,

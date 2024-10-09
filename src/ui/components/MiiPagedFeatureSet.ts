@@ -48,6 +48,7 @@ export interface FeatureSetSwitchItem {
   soundOn?: string;
   property: string;
   forceRender?: boolean;
+  isNumber?: boolean;
 }
 
 export type FeatureSetItem =
@@ -66,6 +67,8 @@ export interface FeatureSet {
   entries: Record<string, FeatureSetEntry>;
   // pages: FeatureSetPage[];
 }
+
+export const playHoverSound = () => playSound("hover");
 
 export function MiiPagedFeatureSet(set: FeatureSet) {
   let tmpMii = new Mii(set.mii.encode());
@@ -101,9 +104,7 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
               case FeatureSetType.Icon:
                 let featureItem = new Html("div")
                   .class("feature-item")
-                  .on("pointerenter", () => {
-                    playSound("hover");
-                  })
+                  .on("pointerenter", playHoverSound)
                   .on("click", () => {
                     (tmpMii as Record<string, any>)[key] = item.value;
                     update();
@@ -130,9 +131,7 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
               case FeatureSetType.Slider:
                 let featureSliderItem = new Html("div")
                   .class("feature-slider")
-                  .on("pointerenter", () => {
-                    playSound("hover");
-                  })
+                  .on("pointerenter", playHoverSound)
                   .appendTo(setList);
 
                 if (item.iconStart) {
@@ -261,29 +260,44 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
                   .html(item.iconOn)
                   .appendTo(featureSwitch);
 
-                buttonLeft.on("click", () => {
-                  (tmpMii as Record<string, any>)[item.property] = false;
-                  if (item.soundOff) playSound(item.soundOff);
-                  else playSound("select");
+                const switchToggle = (value: boolean) => {
+                  let valueToSet: boolean | number = value;
+                  if (item.isNumber) {
+                    valueToSet = Number(valueToSet);
+                  }
+                  (tmpMii as Record<string, any>)[item.property] = valueToSet;
+
+                  if (value === false) {
+                    if (item.soundOff) playSound(item.soundOff);
+                    else playSound("select");
+                  }
+                  if (value === true) {
+                    if (item.soundOn) playSound(item.soundOn);
+                    else playSound("select");
+                  }
                   update();
+                };
+
+                buttonLeft.on("click", () => {
+                  switchToggle(false);
+                  buttonLeft.classOn("active");
+                  buttonRight.classOff("active");
                 });
                 buttonRight.on("click", () => {
-                  (tmpMii as Record<string, any>)[item.property] = true;
-                  if (item.soundOn) playSound(item.soundOn);
-                  else playSound("select");
-                  update();
+                  switchToggle(true);
+                  buttonLeft.classOff("active");
+                  buttonRight.classOn("active");
                 });
+                buttonLeft.on("pointerenter", playHoverSound);
+                buttonRight.on("pointerenter", playHoverSound);
 
-                featureSwitch.val(
-                  (tmpMii as Record<string, any>)[item.property]
-                );
-
-                featureSwitch.on("change", () => {
-                  (tmpMii as Record<string, any>)[item.property] = Number(
-                    featureSwitch.getValue()
-                  );
-                  update();
-                });
+                if ((tmpMii as Record<string, any>)[item.property] == true) {
+                  buttonLeft.classOff("active");
+                  buttonRight.classOn("active");
+                } else {
+                  buttonLeft.classOn("active");
+                  buttonRight.classOff("active");
+                }
                 break;
             }
           }
