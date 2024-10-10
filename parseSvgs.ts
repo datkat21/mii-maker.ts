@@ -22,11 +22,7 @@ let json: { [key: string]: string[] } = {};
 
 function parseSvg(svg: string): string {
   svg = svg
-    // Remove lines with stroke="#737373"
-    // .replace(/<path[^>]*stroke="#737373"[^>]*>/g, "")
-    // Replace fill="#6C7070" with stroke="var(--ktat-hat)"
     .replace(/fill="#6C7070"/g, 'fill="var(--eye-color)"')
-    // .replace(/"/g, 'fill="var(--icon-face-stroke')
     .replace(
       /fill="white" stroke="#6F6F6F"/g,
       'fill="var(--icon-face-fill)" stroke="var(--icon-face-stroke)"'
@@ -36,14 +32,11 @@ function parseSvg(svg: string): string {
       'fill="var(--icon-head-fill)" stroke="var(--icon-head-stroke)"'
     )
     .replace(/fill="#8D8D8D"/g, 'fill="var(--icon-face-detail)"')
-    // .replace(/fill="#FFBABA"/g, 'fill="var(--icon-makeup)"')
     .replace(/#996D54/g, "var(--icon-face-wrinkles)")
     .replace(/#FF5F5F/g, "currentColor")
     .replace(/#0055FF/g, "var(--icon-mouth-tooth)")
     .replace(/#712A04/g, "var(--icon-lip-color-top)")
     .replace(/#BE4E26/g, "var(--icon-lip-color-bottom)")
-    // .replace(/#0055FF/g, "var(--icon-mouth-tooth)")
-    // Remove lnes with <rect/>;
     .replace(/<rect[^>]*\/>/g, "");
   return svg;
 }
@@ -65,14 +58,12 @@ svgsList.sort((a, b) => {
 });
 
 for (const item of svgsList) {
-  // console.log(item);
   const cat = categories.find((cat) => item.startsWith(cat));
   if (cat) {
     if (!json[cat]) {
       json[cat] = [];
     }
     try {
-      // console.log(item);
       let fileData = await Bun.file(join("./svg", item)).text();
 
       fileData = parseSvg(fileData);
@@ -82,7 +73,6 @@ for (const item of svgsList) {
       console.log("Error in", item);
     }
   } else {
-    // console.log(item, "does not belong to a category");
   }
 }
 
