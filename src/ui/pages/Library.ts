@@ -283,10 +283,10 @@ const miiExport = (mii: MiiLocalforage) => {
           text: "Cancel",
           callback() {},
         });
-        m.qs(".modal-content")!.style({
-          "max-width": "1280px",
-          "max-height": "1280px",
-        });
+        // m.qs(".modal-content")!.style({
+        //   "max-width": "1280px",
+        //   "max-height": "1280px",
+        // });
         m.qs(".modal-body")!
           .clear()
           .style({ padding: "0" })
