@@ -1,15 +1,9 @@
-import Html from "@datkat21/html";
-import type Mii from "../../external/mii-js/mii";
 import {
   FeatureSetType,
-  MiiPagedFeatureSet,
-  type FeatureSetIconItem,
+  MiiPagedFeatureSet
 } from "../components/MiiPagedFeatureSet";
-import type { IconSet } from "../../class/MiiEditor";
-import { MiiEyeTable, rearrangeArray } from "../../constants/MiiFeatureTable";
 import {
-  MiiEyeColorTable,
-  MiiHairColorTable,
+  MiiHairColorTable
 } from "../../constants/ColorTables";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
@@ -27,7 +21,7 @@ export function EyebrowTab(data: TabRenderInit) {
           items: ArrayNum(25).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            icon: `<img src="./assets/img/eyebrow/${k}.png" width="84" height="84" />`, // String(k), //data.icons.eyes[k],
+            icon: data.icons.eyebrows[k], // `<img src="./assets/img/eyebrow/${k}.png" width="84" height="84" />`, // String(k), //data.icons.eyes[k],
           })),
           // MiiEyeTable
           // ),
