@@ -60,7 +60,9 @@ export async function setupUi() {
           .style({ "max-width": "unset", "max-height": "unset" });
       }
       if (e.code === "KeyV") {
-        const vol = Number(prompt("Enter volume level from 0-1"));
+        const vol = Number(
+          prompt("Enter volume level from 0-1 (default is 0.35)")
+        );
 
         if (vol < 0) return;
         if (vol > 1) return;
