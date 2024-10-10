@@ -1,12 +1,7 @@
-import Html from "@datkat21/html";
-import type Mii from "../../external/mii-js/mii";
 import {
   FeatureSetType,
   MiiPagedFeatureSet,
-  type FeatureSetIconItem,
 } from "../components/MiiPagedFeatureSet";
-import type { IconSet } from "../../class/MiiEditor";
-import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
 

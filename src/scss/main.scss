@@ -336,7 +336,6 @@ input {
   background-color: var(--root);
   color: var(--text);
   width: 100%;
-  // max-width: max-content;
   height: 100%;
   display: grid;
   grid-template-areas: "mii tabList" "mii tabContent";
@@ -425,11 +424,7 @@ input {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      // opacity: 0;
       transition: opacity 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-      // &.ready {
-      //   opacity: 1;
-      // }
     }
   }
   .tab-list {
@@ -494,11 +489,6 @@ input {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      // display: grid;
-      // grid-gap: 6px;
-      // place-items: center;
-      // grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
-      // grid-template-rows: auto;
       .feature-switch {
         display: flex;
         .feature-switch-left {
@@ -546,7 +536,6 @@ input {
         }
         &.is-color {
           position: relative;
-          // --color: #ff0000;
           &::after {
             $sp: 4px;
             border-radius: 8px;
@@ -569,7 +558,6 @@ input {
   display: grid;
   grid-template-areas: "sidebar miiList" "sidebar miiList";
   grid-template-columns: auto 1fr;
-  // grid-template-rows: 1fr 1fr;
 
   position: fixed;
   top: 0;
@@ -617,7 +605,6 @@ input {
       span {
         width: 100%;
         background: var(--hover);
-        // font-size: 1.2rem;
         font-size: min(max(1.2rem, 5vmax), 1.5rem);
         text-align: center;
         padding: 1rem;

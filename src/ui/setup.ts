@@ -6,9 +6,6 @@ import { Library } from "./pages/Library";
 export async function setupUi() {
   let mm = new MusicManager();
 
-  // document.onclick = () => {
-  //   document.onclick = null;
-
   function playMusic() {
     mm.playSong("mii_maker_music", 0, 41.5, true, true, (source, gainNode) => {
       gainNode.gain.setValueAtTime(-1, mm.audioContext.currentTime);
@@ -51,7 +48,7 @@ export async function setupUi() {
             text: k,
             callback() {
               getSoundManager().playSound(k);
-              //@ts-expect-error
+              //@ts-expect-error used for debugging
               window.lastPlayedSound = k;
             },
           }))

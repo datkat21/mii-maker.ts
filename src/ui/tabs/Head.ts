@@ -1,15 +1,11 @@
-import Html from "@datkat21/html";
-import type Mii from "../../external/mii-js/mii";
 import {
   FeatureSetType,
   MiiPagedFeatureSet,
-  type FeatureSetIconItem,
 } from "../components/MiiPagedFeatureSet";
 import EditorIcons from "../../constants/EditorIcons";
 import { MiiSkinColorTable } from "../../constants/ColorTables";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import { ArrayNum } from "../../util/NumberArray";
-// import { MiiEyeTable, rearrangeArray } from "../../constants/MiiFeatureTable";
 
 export function HeadTab(data: TabRenderInit) {
   data.container.append(

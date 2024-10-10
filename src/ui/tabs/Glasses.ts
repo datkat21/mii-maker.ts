@@ -18,7 +18,7 @@ export function GlassesTab(data: TabRenderInit) {
           items: ArrayNum(8).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            icon: `<img src="./assets/img/glasses/${k}.png" width="84" height="84" />`, // String(k),
+            icon: `<img src="./assets/img/glasses/${k}.png" width="84" height="84" />`,
           })),
         },
         glassesColor: {
@@ -26,7 +26,7 @@ export function GlassesTab(data: TabRenderInit) {
           items: ArrayNum(6).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            color: MiiGlassesColorTable[k], // MiiEyeColorTable[k],
+            color: MiiGlassesColorTable[k],
           })),
         },
         glassesPosition: {

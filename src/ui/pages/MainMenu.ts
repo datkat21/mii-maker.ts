@@ -1,5 +1,3 @@
-import localforage from "localforage";
-import { MiiEditor } from "../../class/MiiEditor";
 import Modal from "../components/Modal";
 import { Library } from "./Library";
 import { SaveDataManager } from "./SaveDataManager";

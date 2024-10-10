@@ -1,10 +1,8 @@
 import {
   FeatureSetType,
-  MiiPagedFeatureSet
+  MiiPagedFeatureSet,
 } from "../components/MiiPagedFeatureSet";
-import {
-  MiiHairColorTable
-} from "../../constants/ColorTables";
+import { MiiHairColorTable } from "../../constants/ColorTables";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
@@ -17,21 +15,18 @@ export function EyebrowTab(data: TabRenderInit) {
       entries: {
         eyebrowType: {
           label: "Type",
-          // rearrangeArray(
           items: ArrayNum(25).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            icon: data.icons.eyebrows[k], // `<img src="./assets/img/eyebrow/${k}.png" width="84" height="84" />`, // String(k), //data.icons.eyes[k],
+            icon: data.icons.eyebrows[k],
           })),
-          // MiiEyeTable
-          // ),
         },
         eyebrowColor: {
           label: "Color",
           items: ArrayNum(8).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            color: MiiHairColorTable[k], // MiiEyeColorTable[k],
+            color: MiiHairColorTable[k],
           })),
         },
         eyePosition: {

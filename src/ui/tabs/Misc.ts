@@ -1,6 +1,5 @@
 import Html from "@datkat21/html";
 import type { TabRenderInit } from "../../constants/TabRenderType";
-import localforage from "localforage";
 import { Buffer as Buf } from "../../../node_modules/buffer/index";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
@@ -53,7 +52,6 @@ export function MiscTab(data: TabRenderInit) {
                   callback() {},
                 }
               );
-            // else data.editor.shutdown(true);
             else
               Modal.modal(
                 "Quitting Editor",

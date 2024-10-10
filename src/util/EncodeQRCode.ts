@@ -1,4 +1,3 @@
-// import { crc16 } from "../external/mii-frontend/crc16.js";
 import { Buffer as Buf } from "../../node_modules/buffer/index.js";
 import sjcl from "../external/mii-frontend/sjcl.min.js";
 

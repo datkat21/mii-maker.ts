@@ -3,7 +3,6 @@ import {
   convertDataToType,
   supportedFormats,
 } from "../external/mii-frontend/data-conversion.js";
-import * as structs from "../external/mii-frontend/all-kaitai-structs.js";
 import { encryptAndEncodeVer3StoreDataToQRCodeFormat } from "./EncodeQRCode.js";
 import Mii from "../external/mii-js/mii.js";
 import { Buffer as Buf } from "../../node_modules/buffer/index.js";

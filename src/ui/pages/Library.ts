@@ -6,9 +6,7 @@ import Modal from "../components/Modal";
 import Mii from "../../external/mii-js/mii";
 import { Buffer } from "../../../node_modules/buffer/index";
 import Loader from "../components/Loader";
-import { playSound } from "../../class/audio/SoundManager";
 import { AddButtonSounds } from "../../util/AddButtonSounds";
-import { encryptAndEncodeVer3StoreDataToQRCodeFormat } from "../../util/EncodeQRCode";
 import { QRCodeCanvas } from "../../util/miiQrImage";
 export const savedMiiCount = async () =>
   (await localforage.keys()).filter((k) => k.startsWith("mii-")).length;
@@ -255,9 +253,7 @@ const miiEdit = (mii: MiiLocalforage, shutdown: () => any) => {
       },
       {
         text: "Cancel",
-        async callback() {
-          /* ... */
-        },
+        async callback() {},
       }
     );
     modal
@@ -283,10 +279,6 @@ const miiExport = (mii: MiiLocalforage) => {
           text: "Cancel",
           callback() {},
         });
-        // m.qs(".modal-content")!.style({
-        //   "max-width": "1280px",
-        //   "max-height": "1280px",
-        // });
         m.qs(".modal-body")!
           .clear()
           .style({ padding: "0" })
@@ -296,22 +288,12 @@ const miiExport = (mii: MiiLocalforage) => {
     {
       text: "Get FFSD data",
       async callback() {
-        return Modal.alert(
-          "FFSD code",
-          mii.mii,
-          // Buffer.from(
-          //   new Mii(Buffer.from(mii.mii, "base64")).encode()
-          // ).toString("base64"),
-          "body",
-          true
-        );
+        return Modal.alert("FFSD code", mii.mii, "body", true);
       },
     },
     {
       text: "Cancel",
-      async callback() {
-        /* ... */
-      },
+      async callback() {},
     }
   );
 };

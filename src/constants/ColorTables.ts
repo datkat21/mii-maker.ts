@@ -1,4 +1,7 @@
-export const MiiFavoriteColorLookupTable: Record<number, number> = {
+export type MiiLookupTableHex = Record<number, number>;
+export type MiiLookupTableString = Record<number, string>;
+
+export const MiiFavoriteColorLookupTable: MiiLookupTableHex = {
   /** Red */
   0: 0xd21e14,
   /** Orange */
@@ -25,7 +28,7 @@ export const MiiFavoriteColorLookupTable: Record<number, number> = {
   11: 0x181814,
 };
 
-export const MiiSkinColorTable: Record<number, string> = {
+export const MiiSkinColorTable: MiiLookupTableString = {
   0: "#FFD3AD",
   1: "#FEB66B",
   2: "#DE7942",
@@ -33,7 +36,7 @@ export const MiiSkinColorTable: Record<number, string> = {
   4: "#AD5129",
   5: "#632C18",
 };
-export const MiiHairColorTable: Record<number, string> = {
+export const MiiHairColorTable: MiiLookupTableString = {
   0: "#1E1A18",
   1: "#402010",
   2: "#5C180A",
@@ -43,7 +46,7 @@ export const MiiHairColorTable: Record<number, string> = {
   6: "#875917",
   7: "#D0A049",
 };
-export const MiiEyeColorTable: Record<number, string> = {
+export const MiiEyeColorTable: MiiLookupTableString = {
   0: "#000000",
   1: "#717372",
   2: "#663C2C",
@@ -51,7 +54,7 @@ export const MiiEyeColorTable: Record<number, string> = {
   4: "#4B58A8",
   5: "#387059",
 };
-export const MiiMouthColorTable: Record<number, string> = {
+export const MiiMouthColorTable: MiiLookupTableString = {
   0: "#D04401",
   1: "#F30100",
   2: "#FD393A",
@@ -68,7 +71,7 @@ export const MiiMouthColorLipTable: Record<
   3: { top: "#DC7751", bottom: "#F09A74" },
   4: { top: "#461E0A", bottom: "#8C503F" },
 };
-export const MiiGlassesColorTable: Record<number, string> = {
+export const MiiGlassesColorTable: MiiLookupTableString = {
   0: "#000000",
   1: "#5d391a",
   2: "#a01612",

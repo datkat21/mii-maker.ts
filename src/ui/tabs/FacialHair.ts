@@ -1,16 +1,8 @@
-import Html from "@datkat21/html";
-import type Mii from "../../external/mii-js/mii";
 import {
   FeatureSetType,
   MiiPagedFeatureSet,
-  type FeatureSetIconItem,
 } from "../components/MiiPagedFeatureSet";
-import type { IconSet } from "../../class/MiiEditor";
-import { MiiEyeTable, rearrangeArray } from "../../constants/MiiFeatureTable";
-import {
-  MiiEyeColorTable,
-  MiiHairColorTable,
-} from "../../constants/ColorTables";
+import { MiiHairColorTable } from "../../constants/ColorTables";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
@@ -26,7 +18,7 @@ export function FacialHairTab(data: TabRenderInit) {
           items: ArrayNum(6).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            icon: `<img src="./assets/img/mustache/${k}.png" width="84" height="84" />`, //String(k),
+            icon: `<img src="./assets/img/mustache/${k}.png" width="84" height="84" />`,
           })),
         },
         mustachePosition: {
@@ -59,7 +51,7 @@ export function FacialHairTab(data: TabRenderInit) {
           items: ArrayNum(6).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            icon: `<img src="./assets/img/beard/${k}.png" width="84" height="84" />`, // String(k),
+            icon: `<img src="./assets/img/beard/${k}.png" width="84" height="84" />`,
           })),
         },
         facialHairColor: {
@@ -67,7 +59,7 @@ export function FacialHairTab(data: TabRenderInit) {
           items: ArrayNum(8).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            color: MiiHairColorTable[k], // MiiEyeColorTable[k],
+            color: MiiHairColorTable[k],
           })),
         },
       },
