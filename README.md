@@ -1,19 +1,15 @@
-# mii-maker-real
+# Mii Maker app in TypeScript
 
-To install dependencies:
+![Preview image](public/assets/img/preview.png)
 
-```bash
-bun install
-```
+Create and share Miis online with just a few clicks!
 
-To run:
+## Credits
 
-```bash
-bun run build.ts
-```
+- [mii-unsecure.ariankordi.net](https://mii-unsecure.ariankordi.net) API by ariankordi, used to render Mii heads and renders.
+- `mii-js` library used for interacting with Mii data in a JavaScript-friendly way
+- [Some code](https://github.com/datkat21/mii-maker-real/tree/master/src/external/mii-frontend) "borrowed" from arian's website.
 
-This project was created using `bun init` in bun v1.1.21. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+## Contributing
 
-
-hack: change buffer code to 
-`import { Buffer } from '../../buffer/index';`
+I'm open to contributions if you want to help on the project!
