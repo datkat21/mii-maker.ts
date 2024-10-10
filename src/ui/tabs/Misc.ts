@@ -60,14 +60,22 @@ export function MiscTab(data: TabRenderInit) {
                 "No changes were made. Are you sure you want to exit?",
                 "body",
                 {
-                  text: "Yes",
+                  text: "Save & Exit",
                   callback() {
                     data.editor.shutdown();
                   },
                 },
                 {
+                  text: "Exit without Saving",
+                  callback() {
+                    data.editor.shutdown(false);
+                  },
+                },
+                {
                   text: "No",
-                  callback() {},
+                  callback() {
+                    data.editor.shutdown(false);
+                  },
                 }
               );
           })
