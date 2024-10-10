@@ -68,3 +68,11 @@ export const MiiMouthColorLipTable: Record<
   3: { top: "#DC7751", bottom: "#F09A74" },
   4: { top: "#461E0A", bottom: "#8C503F" },
 };
+export const MiiGlassesColorTable: Record<number, string> = {
+  0: "#000000",
+  1: "#5d391a",
+  2: "#a01612",
+  3: "#2e3969",
+  4: "#a4601e",
+  5: "#766f67",
+};

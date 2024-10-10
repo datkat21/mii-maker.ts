@@ -15,6 +15,7 @@
   "dependencies": {
     "@binary-files/structjs": "^1.2.3",
     "@datkat21/html": "^1.2.0",
+    "@sjmc11/tourguidejs": "^0.0.17",
     "@types/assert": "^1.5.10",
     "@types/c-struct": "^0.0.3",
     "@types/gsap": "^3.0.0",

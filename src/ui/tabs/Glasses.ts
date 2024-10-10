@@ -1,16 +1,8 @@
-import Html from "@datkat21/html";
-import type Mii from "../../external/mii-js/mii";
 import {
   FeatureSetType,
   MiiPagedFeatureSet,
-  type FeatureSetIconItem,
 } from "../components/MiiPagedFeatureSet";
-import type { IconSet } from "../../class/MiiEditor";
-import { MiiEyeTable, rearrangeArray } from "../../constants/MiiFeatureTable";
-import {
-  MiiEyeColorTable,
-  MiiHairColorTable,
-} from "../../constants/ColorTables";
+import { MiiGlassesColorTable } from "../../constants/ColorTables";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
@@ -34,7 +26,7 @@ export function GlassesTab(data: TabRenderInit) {
           items: ArrayNum(6).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            color: String(k), // MiiEyeColorTable[k],
+            color: MiiGlassesColorTable[k], // MiiEyeColorTable[k],
           })),
         },
         glassesPosition: {
