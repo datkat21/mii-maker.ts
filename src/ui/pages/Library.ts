@@ -11,13 +11,14 @@ import { QRCodeCanvas } from "../../util/miiQrImage";
 import { Link } from "../components/Link";
 export const savedMiiCount = async () =>
   (await localforage.keys()).filter((k) => k.startsWith("mii-")).length;
-
+export const newMiiId = async () =>
+  `mii-${await savedMiiCount()}-${Date.now()}`;
 export const miiIconUrl = (data: string) =>
   `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
     data
   )}&shaderType=0&type=face&width=180&verifyCharInfo=0`;
 
-export async function Library() {
+export async function Library(highlightMiiId?: string) {
   function shutdown(): Promise<void> {
     return new Promise((resolve) => {
       container.class("fadeOut");
@@ -41,6 +42,7 @@ export async function Library() {
       await localforage.keys()
     )
       .filter((k) => k.startsWith("mii-"))
+      .sort((a, b) => Number(a.split("-")[1]!) - Number(b.split("-")[1]!))
       .map(async (k) => ({
         id: k,
         mii: (await localforage.getItem(k)) as string,
@@ -74,6 +76,26 @@ export async function Library() {
       let miiName = new Html("span").text(miiData.miiName);
 
       miiContainer.appendMany(miiImage, miiName).appendTo(libraryList);
+
+      requestAnimationFrame(() => {
+        if (highlightMiiId !== undefined) {
+          if (highlightMiiId === mii.id) {
+            miiContainer.classOn("highlight");
+
+            setTimeout(() => {
+              miiContainer.classOff("highlight");
+            }, 2000);
+
+            const mc = miiContainer.elm;
+            mc.closest(".library-list")!.scroll({
+              top:
+                mc.getBoundingClientRect().top +
+                mc.getBoundingClientRect().height,
+              behavior: "smooth",
+            });
+          }
+        }
+      });
     } catch (e: unknown) {
       console.log("Oops", e);
     }
@@ -134,6 +156,62 @@ const miiCreateDialog = () => {
       callback: miiCreateRandom,
     },
     {
+      text: "Import FFSD data",
+      callback: () => {
+        let id: string;
+        let modal = Modal.modal(
+          "Import FFSD data",
+          "",
+          "body",
+          {
+            text: "Cancel",
+            callback: miiCreateDialog,
+          },
+          {
+            text: "Confirm",
+            callback() {
+              Library(id);
+            },
+          }
+        );
+        modal
+          .qsa(".modal-body .flex-group,.modal-body span")!
+          .forEach((q) => q!.style({ display: "none" }));
+        modal.qs(".modal-body")!.appendMany(
+          new Html("span").text("Select an FFSD file to import"),
+          new Html("input")
+            .attr({ type: "file", accept: ".ffsd,.cfsd" })
+            .style({ margin: "auto" })
+            .on("change", (e) => {
+              const target = e.target as HTMLInputElement;
+              console.log("Files", target.files);
+
+              const f = new FileReader();
+
+              f.readAsArrayBuffer(target.files![0]);
+              f.onload = async () => {
+                try {
+                  const mii = new Mii(Buffer.from(f.result as ArrayBuffer));
+
+                  mii.validate();
+
+                  const miiDataToSave = mii.encode().toString("base64");
+
+                  id = await newMiiId();
+
+                  await localforage.setItem(id, miiDataToSave);
+
+                  modal.qs(".modal-body button")!.elm.click();
+                } catch (e) {
+                  Modal.alert("Error", `Invalid Mii data: ${e}`);
+                  target.value = "";
+                }
+              };
+            })
+        );
+      },
+    },
+    {
       text: "Cancel",
       callback: () => Library(),
     }
@@ -143,11 +221,7 @@ const miiCreateFromScratch = () => {
   function cb(gender: MiiGender) {
     return () => {
       new MiiEditor(gender, async (m, shouldSave) => {
-        if (shouldSave === true)
-          await localforage.setItem(
-            `mii-${await savedMiiCount()}-${Date.now()}`,
-            m
-          );
+        if (shouldSave === true) await localforage.setItem(await newMiiId(), m);
         Library();
       });
     };
@@ -200,11 +274,7 @@ const miiCreatePNID = async () => {
   new MiiEditor(
     0,
     async (m, shouldSave) => {
-      if (shouldSave === true)
-        await localforage.setItem(
-          `mii-${await savedMiiCount()}-${Date.now()}`,
-          m
-        );
+      if (shouldSave === true) await localforage.setItem(await newMiiId(), m);
       Library();
     },
     (await pnid.json()).data
@@ -220,11 +290,7 @@ const miiCreateRandom = async () => {
   new MiiEditor(
     0,
     async (m, shouldSave) => {
-      if (shouldSave === true)
-        await localforage.setItem(
-          `mii-${await savedMiiCount()}-${Date.now()}`,
-          m
-        );
+      if (shouldSave === true) await localforage.setItem(await newMiiId(), m);
       Library();
     },
     random.data

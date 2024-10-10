@@ -8,8 +8,10 @@ setupUi();
 declare global {
   interface Window {
     mii: Mii;
+    Mii: any;
     editor: MiiEditor;
     buffer: Buf;
+    localforage: LocalForage;
   }
 }
 

@@ -1,7 +1,9 @@
+import localforage from "localforage";
 import { MusicManager } from "../class/audio/MusicManager";
 import { getSoundManager, initSoundManager } from "../class/audio/SoundManager";
 import Modal from "./components/Modal";
 import { Library } from "./pages/Library";
+import Mii from "../external/mii-js/mii";
 
 export async function setupUi() {
   let mm = new MusicManager();
@@ -55,6 +57,11 @@ export async function setupUi() {
         )
           .qs(".modal-content")!
           .style({ "max-width": "unset", "max-height": "unset" });
+      }
+      if (e.code === "KeyD") {
+        // debug key enables debug options
+        window.localforage = localforage;
+        window.Mii = Mii;
       }
       if (e.code === "KeyV") {
         const vol = Number(

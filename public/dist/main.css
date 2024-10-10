@@ -605,6 +605,11 @@ input[type=range] {
   border-radius: 8px;
   overflow: clip;
   cursor: pointer;
+  transition: box-shadow cubic-bezier(0.16, 1, 0.3, 1) 0.8s;
+  box-shadow: 0 0 0 0 var(--selection-color);
+}
+.mii-library .library-list .library-list-mii.highlight {
+  box-shadow: 0 0 0 0.3rem var(--selection-color);
 }
 .mii-library .library-list .library-list-mii:hover {
   background: var(--focus);

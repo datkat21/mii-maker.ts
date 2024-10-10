@@ -84,7 +84,7 @@ export const QRCodeCanvas = async (mii: string) => {
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.fillStyle = "#cccccc";
-  ctx.fillText(`${location.host}`, 32, 667);
+  ctx.fillText(`${location.origin}`, 32, 667);
   ctx.drawImage(render, 49, 0, 720, 720);
   // qr code container
   ctx.fillStyle = "#ffffff";

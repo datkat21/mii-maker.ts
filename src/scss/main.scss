@@ -622,6 +622,13 @@ input {
       overflow: clip;
       cursor: pointer;
 
+      transition: box-shadow $easing-function $animation-duration;
+      box-shadow: 0 0 0 0 var(--selection-color);
+
+      &.highlight {
+        box-shadow: 0 0 0 0.3rem var(--selection-color);
+      }
+
       &:hover {
         background: var(--focus);
       }
