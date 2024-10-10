@@ -60,7 +60,7 @@ export const initSoundManager = async () => {
   let promises = [];
   const fileList = Object.keys(zip.files);
   for (const file of fileList) {
-    console.log(file, zip.files[file]);
+    // console.log(file, zip.files[file]);
     promises.push(zip.files[file].async("arraybuffer"));
   }
   const resolves = await Promise.all(promises);

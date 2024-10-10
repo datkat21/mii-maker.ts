@@ -44,8 +44,6 @@ export default {
         let isClosing = false;
         const closeButtonHandler = (e: Event) => {
           // sometimes duplicated events
-          if (isClosing) return;
-          isClosing = true;
           const t = e.target as HTMLElement;
           if (t == null) return;
           if (
@@ -53,6 +51,8 @@ export default {
             !t.classList.contains("close-button")
           )
             return;
+          if (isClosing) return;
+          isClosing = true;
           x.classOn("closing");
           setTimeout(() => {
             x.cleanup();
@@ -63,7 +63,9 @@ export default {
           new Html("button")
             .class("close-button")
             .appendTo(modalHeader)
-            .on("click", closeButtonHandler)
+            .on("click", closeButtonHandler),
+          "hover",
+          "back"
         );
         x.on("click", closeButtonHandler);
         continue;

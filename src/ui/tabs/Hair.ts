@@ -25,7 +25,7 @@ export function HairTab(data: TabRenderInit) {
           items: ArrayNum(132).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            icon: String(k),
+            icon: `<img src="./assets/img/hair/${k}.png" width="84" height="84" />`,
           })),
         },
         hairColor: {

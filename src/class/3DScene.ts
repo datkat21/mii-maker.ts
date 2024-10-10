@@ -146,12 +146,10 @@ export class Mii3DScene {
     if (part === CameraPosition.MiiFullBody) {
       this.#controls.moveTo(0, 0, 0, true);
       this.#controls.rotateTo(0, Math.PI / 2, true);
-      // this.#controls.zoomTo(1.5, true);
       this.#controls.dollyTo(25, true);
     } else if (part === CameraPosition.MiiHead) {
       this.#controls.moveTo(0, 3.5, 0, true);
       this.#controls.rotateTo(0, Math.PI / 2, true);
-      // this.#controls.zoomTo(1.8, true);
       this.#controls.dollyTo(15, true);
     }
   }
@@ -329,7 +327,7 @@ export class Mii3DScene {
       console.log("first time loading head");
       // return;
     }
-    let head = this.#scene.getObjectByName("MiiHead");
+    let head = this.#scene.getObjectsByProperty("name", "MiiHead");
 
     const GLB = await this.#loader.loadAsync(
       this.mii.studioUrl({
@@ -337,9 +335,9 @@ export class Mii3DScene {
       } as unknown as any)
     );
 
-    if (head !== undefined) {
+    if (head.length > 0) {
       // console.log("attempting to remove head", head);
-      this.#scene.remove(head);
+      this.#scene.remove(...head);
     }
 
     GLB.scene.name = "MiiHead";

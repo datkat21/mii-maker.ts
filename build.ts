@@ -9,7 +9,7 @@ export async function compile(
   filePath: string,
   outputDir: string
 ): Promise<any> {
-  return await Bun.build({
+  let output = (await Bun.build({
     entrypoints: [filePath],
     outdir: outputDir,
     splitting: true,
@@ -20,13 +20,21 @@ export async function compile(
       syntax: true,
       whitespace: true,
     },
-  });
+  }).catch((e) => {
+    console.error("Failed to build:", e);
+  })) as BuildOutput;
+  if (output.logs) {
+    for (const log of output.logs) {
+      console.error(log.message);
+    }
+  }
 }
 
 import { join } from "path";
 import { watch } from "fs";
 
 import * as sass from "sass";
+import type { BuildOutput } from "bun";
 
 async function build() {
   try {

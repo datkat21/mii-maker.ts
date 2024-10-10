@@ -53,23 +53,23 @@ export function MiscTab(data: TabRenderInit) {
                   callback() {},
                 }
               );
-            else data.editor.shutdown(false);
-            // else
-            //   Modal.modal(
-            //     "Quitting Editor",
-            //     "No changes were made. Are you sure you want to exit?",
-            //     "body",
-            //     {
-            //       text: "Yes",
-            //       callback() {
-            //         data.editor.shutdown();
-            //       },
-            //     },
-            //     {
-            //       text: "No",
-            //       callback() {},
-            //     }
-            //   );
+            // else data.editor.shutdown(true);
+            else
+              Modal.modal(
+                "Quitting Editor",
+                "No changes were made. Are you sure you want to exit?",
+                "body",
+                {
+                  text: "Yes",
+                  callback() {
+                    data.editor.shutdown();
+                  },
+                },
+                {
+                  text: "No",
+                  callback() {},
+                }
+              );
           })
         ),
         Input(

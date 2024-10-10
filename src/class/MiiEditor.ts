@@ -22,6 +22,10 @@ import { ScaleTab } from "../ui/tabs/Scale";
 import Modal from "../ui/components/Modal";
 import { playSound } from "./audio/SoundManager";
 import { AddButtonSounds } from "../util/AddButtonSounds";
+import { FacialHairTab } from "../ui/tabs/FacialHair";
+import { MoleTab } from "../ui/tabs/Mole";
+import { EyebrowTab } from "../ui/tabs/Eyebrow";
+import { GlassesTab } from "../ui/tabs/Glasses";
 
 export enum MiiGender {
   Male,
@@ -71,6 +75,8 @@ export class MiiEditor {
     ) => any | Promise<any>,
     init?: string
   ) {
+    window.editor = this;
+
     this.#loadSoundLoop();
     this.dirty = false;
     this.ready = false;
@@ -92,7 +98,10 @@ export class MiiEditor {
 
     this.mii = new Mii(Buffer.from(initString, "base64") as unknown as Buffer);
 
-    window.mii = this.mii;
+    // Ensure that birthPlatform doesn't cause issues.
+    if (this.mii.deviceOrigin === 0) this.mii.deviceOrigin = 4;
+    // Enable allow copying so QR can be made.
+    if (this.mii.allowCopying === false) this.mii.allowCopying = true;
 
     this.#setupUi();
   }
@@ -219,7 +228,7 @@ export class MiiEditor {
       },
       {
         icon: EditorIcons.eyebrows,
-        select: TabInit(EmptyTab, CameraPosition.MiiHead),
+        select: TabInit(EyebrowTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorIcons.eyes,
@@ -235,11 +244,15 @@ export class MiiEditor {
       },
       {
         icon: EditorIcons.facialHair,
-        select: TabInit(EmptyTab, CameraPosition.MiiHead),
+        select: TabInit(FacialHairTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorIcons.mole,
-        select: TabInit(EmptyTab, CameraPosition.MiiHead),
+        select: TabInit(MoleTab, CameraPosition.MiiHead),
+      },
+      {
+        icon: EditorIcons.glasses,
+        select: TabInit(GlassesTab, CameraPosition.MiiHead),
       },
       {
         icon: EditorIcons.scale,
@@ -274,7 +287,7 @@ export class MiiEditor {
           .attr({
             src: `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
               Buffer.from(this.mii.encode()).toString("base64")
-            )}&shaderType=2&type=face&width=260&verifyCharInfo=0`,
+            )}&shaderType=1&type=face&width=260&verifyCharInfo=0`,
           });
         break;
       case RenderMode.ThreeJs:

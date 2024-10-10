@@ -9,6 +9,7 @@ import Loader from "../components/Loader";
 import { playSound } from "../../class/audio/SoundManager";
 import { AddButtonSounds } from "../../util/AddButtonSounds";
 import { encryptAndEncodeVer3StoreDataToQRCodeFormat } from "../../util/EncodeQRCode";
+import { QRCodeCanvas } from "../../util/miiQrImage";
 export const savedMiiCount = async () =>
   (await localforage.keys()).filter((k) => k.startsWith("mii-")).length;
 
@@ -47,6 +48,13 @@ export async function Library() {
       }))
   );
 
+  if (miis.length === 0) {
+    libraryList.append(
+      new Html("div")
+        .style({ position: "absolute", top: "2rem", left: "2rem" })
+        .text("You have no Miis yet. Create one to get started!")
+    );
+  }
   for (const mii of miis) {
     let miiContainer = new Html("div")
       .class("library-list-mii")
@@ -58,6 +66,8 @@ export async function Library() {
 
     try {
       miiData.validate();
+
+      console.log(miiData.miiName + "'s birthPlatform:", miiData.deviceOrigin);
 
       let miiImage = new Html("img").attr({
         src: miiIconUrl(mii.mii),
@@ -255,21 +265,11 @@ const miiEdit = (mii: MiiLocalforage, shutdown: () => any) => {
       ?.prepend(
         new Html("img")
           .attr({ src: miiIconUrl(mii.mii) })
-          .style({ width: "180px", margin: "0 auto" })
+          .style({ width: "180px", margin: "-18px auto 0 auto" })
       );
   };
 };
-import qrjs from "../../external/mii-frontend/qrjs.min.js";
-import {
-  convertDataToType,
-  supportedFormats,
-} from "../../external/mii-frontend/data-conversion.js";
-import * as structs from "../../external/mii-frontend/all-kaitai-structs.js";
-console.log(structs);
 
-const ver3Format = supportedFormats.find(
-  (f) => f.className === "Gen2Wiiu3dsMiitomo"
-)!;
 const miiExport = (mii: MiiLocalforage) => {
   Modal.modal(
     "Mii Export",
@@ -278,19 +278,19 @@ const miiExport = (mii: MiiLocalforage) => {
     {
       text: "Generate QR code",
       async callback() {
-        const convertedVer3Data = convertDataToType(
-          new Uint8Array(Buffer.from(mii.mii, "base64")),
-          ver3Format,
-          ver3Format.className,
-          true
-        );
-        const ver3QRData =
-          encryptAndEncodeVer3StoreDataToQRCodeFormat(convertedVer3Data);
-        console.log(convertedVer3Data, ver3QRData);
-        const png = qrjs.generatePNG(ver3QRData, { margin: null });
-        console.log(ver3QRData, png);
-        const qrcode = URL.createObjectURL(await (await fetch(png)).blob());
-        console.log(qrcode);
+        const qrCodeImage = await QRCodeCanvas(mii.mii);
+        const m = Modal.modal("QR Code", "", "body", {
+          text: "Cancel",
+          callback() {},
+        });
+        m.qs(".modal-content")!.style({
+          "max-width": "1280px",
+          "max-height": "1280px",
+        });
+        m.qs(".modal-body")!
+          .clear()
+          .style({ padding: "0" })
+          .prepend(new Html("img").attr({ src: qrCodeImage }));
       },
     },
     {

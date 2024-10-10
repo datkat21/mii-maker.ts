@@ -109,7 +109,8 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
                     (tmpMii as Record<string, any>)[key] = item.value;
                     update();
                     if (item.sound) playSound(item.sound);
-                    else playSound("selectIcon2");
+                    else if (item.color) playSound("select_color");
+                    else if (item.icon) playSound("select_part");
                     setList
                       .qsa(".feature-item")!
                       .forEach((i) => i!.classOff("active"));
@@ -194,9 +195,9 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
                   let frontIcon = new Html("span")
                     .html(item.iconStart)
                     .on("click", () => {
-                      featureSlider.val(Number(featureSlider.getValue()) - 1);
+                      featureRange.val(Number(featureRange.getValue()) - 1);
                       (tmpMii as Record<string, any>)[item.property] = Number(
-                        featureSlider.getValue()
+                        featureRange.getValue()
                       );
                       if (item.soundStart) playSound(item.soundStart);
                       else playSound("select");
@@ -218,9 +219,9 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
                   let backIcon = new Html("span")
                     .html(item.iconEnd)
                     .on("click", () => {
-                      featureSlider.val(Number(featureSlider.getValue()) + 1);
+                      featureRange.val(Number(featureRange.getValue()) + 1);
                       (tmpMii as Record<string, any>)[item.property] = Number(
-                        featureSlider.getValue()
+                        featureRange.getValue()
                       );
                       if (item.soundEnd) playSound(item.soundEnd);
                       else playSound("select");
@@ -235,7 +236,7 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
 
                 featureRange.on("change", () => {
                   (tmpMii as Record<string, any>)[item.property] = Number(
-                    featureSlider.getValue()
+                    featureRange.getValue()
                   );
                   update();
                 });

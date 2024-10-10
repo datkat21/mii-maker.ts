@@ -58,12 +58,31 @@ body {
     --icon-lip-color-top: #712a04;
     --icon-lip-color-bottom: #be4e26;
   }
+
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-color: var(--label) var(--container);
+    scrollbar-width: thin;
+  }
 }
 
 * {
   box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
+}
+div::-webkit-scrollbar {
+  width: 12px !important;
+  background-color: transparent !important;
+  height: 6px !important;
+}
+div::-webkit-scrollbar-thumb {
+  border-radius: 10px !important;
+  background-color: var(--label) !important;
+}
+div::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 10px !important;
+  background-color: transparent !important;
 }
 
 h1,
@@ -78,7 +97,7 @@ h6 {
 
 $animation-duration: 0.8s;
 $easing-function: cubic-bezier(0.16, 1, 0.3, 1);
-$tabletWidth: 550px;
+$tabletWidth: 960px;
 $desktopWidth: 1280px;
 
 @keyframes fadeIn {
@@ -156,7 +175,7 @@ $desktopWidth: 1280px;
   .modal-content {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--stroke);
+    border: 2px solid var(--stroke);
     border-radius: 8px;
     min-width: 200px;
     min-height: 140px;
@@ -362,8 +381,8 @@ input {
     }
   }
   @media screen and (min-width: $tabletWidth) and (max-width: $desktopWidth) {
-    grid-template-areas: "mii tabList tabContent";
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-areas: "tabList mii tabContent";
+    grid-template-columns: auto 1fr 1fr;
     grid-template-rows: 1fr;
     > .tab-list {
       display: flex;
@@ -513,8 +532,8 @@ input {
         gap: 1rem;
       }
       .feature-item {
-        width: 52px;
-        height: 52px;
+        min-width: 52px;
+        min-height: 52px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -570,7 +589,7 @@ input {
     padding: 2rem;
     display: grid;
     grid-area: miiList;
-
+    position: relative;
     overflow: auto;
 
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -609,10 +628,14 @@ input {
 
   @media screen and (max-width: $tabletWidth) {
     grid-template-areas: "miiList miiList" "sidebar sidebar";
+    grid-template-rows: 1fr auto;
     .library-sidebar {
       flex-direction: row;
       button {
         flex: 1;
+      }
+      h1 {
+        display: none;
       }
     }
   }
