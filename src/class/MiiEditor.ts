@@ -26,6 +26,7 @@ import { FacialHairTab } from "../ui/tabs/FacialHair";
 import { MoleTab } from "../ui/tabs/Mole";
 import { EyebrowTab } from "../ui/tabs/Eyebrow";
 import { GlassesTab } from "../ui/tabs/Glasses";
+import localforage from "localforage";
 
 export enum MiiGender {
   Male,
@@ -76,6 +77,12 @@ export class MiiEditor {
     init?: string
   ) {
     window.editor = this;
+
+    // localforage.keys().then((k) => {
+    //   if (k.find((key) => key.startsWith("mii")) === undefined) {
+    //     // todo
+    //   }
+    // });
 
     this.#loadSoundLoop();
     this.dirty = false;
