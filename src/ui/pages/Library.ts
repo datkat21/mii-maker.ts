@@ -8,6 +8,7 @@ import { Buffer } from "../../../node_modules/buffer/index";
 import Loader from "../components/Loader";
 import { AddButtonSounds } from "../../util/AddButtonSounds";
 import { QRCodeCanvas } from "../../util/miiQrImage";
+import { Link } from "../components/Link";
 export const savedMiiCount = async () =>
   (await localforage.keys()).filter((k) => k.startsWith("mii-")).length;
 
@@ -78,23 +79,35 @@ export async function Library() {
     }
   }
 
-  AddButtonSounds(
-    new Html("button")
-      .text("Main Menu")
-      .on("click", async () => {
-        await shutdown();
-        MainMenu();
-      })
-      .appendTo(sidebar)
-  );
-  AddButtonSounds(
-    new Html("button")
-      .text("Create New")
-      .on("click", async () => {
-        await shutdown();
-        miiCreateDialog();
-      })
-      .appendTo(sidebar)
+  sidebar.appendMany(
+    new Html("div").class("sidebar-buttons").appendMany(
+      AddButtonSounds(
+        new Html("button").text("Main Menu").on("click", async () => {
+          await shutdown();
+          MainMenu();
+        })
+      ),
+      AddButtonSounds(
+        new Html("button").text("Create New").on("click", async () => {
+          await shutdown();
+          miiCreateDialog();
+        })
+      )
+    ),
+    new Html("div")
+      .class("sidebar-credits")
+      .appendMany(
+        new Html("span").text("Credits"),
+        AddButtonSounds(
+          Link("Source code", "https://github.com/datkat21/mii-maker-real")
+        ),
+        AddButtonSounds(
+          Link(
+            "Mii Rendering API by ariankordi",
+            "https://mii-unsecure.ariankordi.net"
+          )
+        )
+      )
   );
 }
 
