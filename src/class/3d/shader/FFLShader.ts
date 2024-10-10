@@ -1,10 +1,16 @@
 import * as THREE from "three";
+
 //@ts-expect-error TS Language server doesn't like this
 import fflVertexShader from "./FFLShader.vert" with { type: "text" };
 //@ts-expect-error TS Language server doesn't like this
 import fflFragmentShader from "./FFLShader.frag" with { type: "text" };
 
-export class FFLShaderMaterial extends THREE.ShaderMaterial {
+//@ts-expect-error TS Language server doesn't like this
+import fflBodyVertexShader from "./FFLBodyShader.vert" with { type: "text" };
+//@ts-expect-error TS Language server doesn't like this
+import fflBodyFragmentShader from "./FFLBodyShader.frag" with { type: "text" };
+
+export class FFLBodyShaderMaterial extends THREE.ShaderMaterial {
   constructor({ color = "#fff" }: { color: string }) {
     super({
       lights: true,
@@ -20,8 +26,11 @@ export class FFLShaderMaterial extends THREE.ShaderMaterial {
     });
 
     this.name = "FFLShader";
-    this.glslVersion = "100";
-    this.vertexShader = fflVertexShader;
-    this.fragmentShader = fflFragmentShader;
+    this.glslVersion = "300 es";
+    this.vertexShader = fflBodyVertexShader;
+    this.fragmentShader = fflBodyFragmentShader;
   }
 }
+
+
+export { fflVertexShader, fflFragmentShader };

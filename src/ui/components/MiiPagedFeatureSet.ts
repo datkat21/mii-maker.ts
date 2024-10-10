@@ -62,7 +62,7 @@ export interface FeatureSetEntry {
 }
 
 export interface FeatureSet {
-  mii: Mii;
+  mii?: any;
   onChange: (mii: Mii, forceRender: boolean) => void;
   entries: Record<string, FeatureSetEntry>;
   // pages: FeatureSetPage[];
@@ -71,7 +71,10 @@ export interface FeatureSet {
 export const playHoverSound = () => playSound("hover");
 
 export function MiiPagedFeatureSet(set: FeatureSet) {
-  let tmpMii = new Mii(set.mii.encode());
+  let tmpMii: Mii | any;
+  if (set.mii) tmpMii = new Mii(set.mii.encode());
+  else tmpMii = {};
+
   let setContainer = new Html("div").class("feature-set-container");
 
   const tabListInit: Tab[] = [];

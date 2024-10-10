@@ -294,7 +294,7 @@ export class MiiEditor {
           .attr({
             src: `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
               Buffer.from(this.mii.encode()).toString("base64")
-            )}&shaderType=1&type=face&width=260&verifyCharInfo=0`,
+            )}&shaderType=0&type=face&width=260&verifyCharInfo=0`,
           });
         break;
       case RenderMode.ThreeJs:

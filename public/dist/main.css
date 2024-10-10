@@ -344,6 +344,9 @@ input[type=range] {
   grid-template-rows: auto 1fr;
   animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.ui-base.not-fixed {
+  position: static;
+}
 .ui-base.closing {
   pointer-events: none;
   animation: fadeOut 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;

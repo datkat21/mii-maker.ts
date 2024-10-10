@@ -23,7 +23,7 @@ const makeQrCodeImage = async (mii: string): Promise<HTMLImageElement> => {
   const ver3QRData =
     encryptAndEncodeVer3StoreDataToQRCodeFormat(convertedVer3Data);
   // console.log(convertedVer3Data, ver3QRData);
-  const png = qrjs.generatePNG(ver3QRData, { margin: null });
+  const png = qrjs.generatePNG(ver3QRData, { margin: 0 });
   // //@ts-expect-error
   // window.qrCodeSourceData = convertedVer3Data;
   // //@ts-expect-error
@@ -43,10 +43,21 @@ export const getMiiRender = async (mii: string): Promise<HTMLImageElement> => {
     await fetch(
       `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
         mii
-      )}&shaderType=0&type=face&width=560&verifyCharInfo=0`
+      )}&shaderType=0&type=face&width=720&verifyCharInfo=0`
     )
   ).blob();
-  const img = new Image(560, 560);
+  const img = new Image(720, 720);
+  img.src = URL.createObjectURL(blob);
+  return new Promise((resolve) => {
+    img.onload = () => {
+      return resolve(img);
+    };
+  });
+};
+
+export const getBackground = async (): Promise<HTMLImageElement> => {
+  const blob = await (await fetch("./assets/img/bg.png")).blob();
+  const img = new Image(1280, 720);
   img.src = URL.createObjectURL(blob);
   return new Promise((resolve) => {
     img.onload = () => {
@@ -59,6 +70,7 @@ export const QRCodeCanvas = async (mii: string) => {
   const render = await getMiiRender(mii);
   const qrCodeSource = await makeQrCodeImage(mii);
   const miiData = new Mii(Buf.from(mii, "base64"));
+  const background = await getBackground();
 
   const canvas = document.createElement("canvas");
   canvas.width = 1280;
@@ -66,34 +78,31 @@ export const QRCodeCanvas = async (mii: string) => {
   const ctx = canvas.getContext("2d")!;
 
   // background
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.fillRect(0, 0, 1280, 720);
-  ctx.fill();
+  ctx.drawImage(background, 0, 0);
   // mark
   ctx.font = "500 24px sans-serif";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.fillStyle = "#cccccc";
-  ctx.fillText("mii-maker-web", 32, 667);
-  ctx.drawImage(render, 77, 80, 561, 561);
+  ctx.fillText(`${location.host}`, 32, 667);
+  ctx.drawImage(render, 49, 0, 720, 720);
   // qr code container
-  ctx.fillStyle = "#DDDDDD";
+  ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.roundRect(741, 79, 463, 463, [16, 16, 0, 0]);
+  ctx.roundRect(769, 79, 463, 463, [16, 16, 0, 0]);
   ctx.fill();
-  ctx.drawImage(qrCodeSource, 757, 95, 431, 431);
+  ctx.drawImage(qrCodeSource, 797, 107, 408, 408);
   // name container
-  ctx.fillStyle = "#F7F7F7";
+  ctx.fillStyle = "#f6f6f6";
   ctx.beginPath();
-  ctx.roundRect(741, 542, 463, 99, [0, 0, 16, 16]);
+  ctx.roundRect(769, 542, 463, 99, [0, 0, 16, 16]);
   ctx.fill();
   // mii name
   ctx.fillStyle = "#000000";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.font = "500 38px sans-serif";
-  ctx.fillText(miiData.miiName, 972, 591);
+  ctx.fillText(miiData.miiName, 1005, 591);
   const canvasPngImage = canvas.toDataURL("png", 100);
   return canvasPngImage;
 };

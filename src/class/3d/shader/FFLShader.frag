@@ -1,19 +1,4 @@
-//
-//  sample.flg
-//  Fragment shader
-//  Copyright (c) 2014 Nintendo Co., Ltd. All rights reserved.
-//
-//
-
-#ifdef GL_ES
-precision mediump float;
-#else
-#   define lowp
-#   define mediump
-#   define highp
-#endif
-
-
+// https://jsfiddle.net/arian_/8gvynrdu/6/
 //
 //  定数定義ファイル
 //
@@ -153,8 +138,10 @@ varying mediump vec2 v_texCoord;       //!< 出力: テクスチャー座標
 
 /// constカラー
 uniform mediump vec4  u_const1; ///< constカラー1
+/*
 uniform mediump vec4  u_const2; ///< constカラー2
 uniform mediump vec4  u_const3; ///< constカラー3
+*/
 
 /// ライト設定
 uniform mediump vec4 u_light_ambient;  ///< カメラ空間のライト方向
@@ -180,7 +167,6 @@ uniform mediump float u_rim_power;
 // サンプラー
 uniform sampler2D s_texture;
 
-
 // -------------------------------------------------------
 // メイン文
 void main()
@@ -196,10 +182,11 @@ void main()
         color = u_const1;
     }
 //#elif defined(FFL_MODULATE_MODE_TEXTURE_DIRECT)
-    else if(u_mode == FFL_MODULATE_MODE_TEXTURE_DIRECT)
+    else if(u_mode > FFL_MODULATE_MODE_CONSTANT)// == FFL_MODULATE_MODE_TEXTURE_DIRECT)
     {
         color = texture2D(s_texture, v_texCoord);
     }
+    /*
 //#elif defined(FFL_MODULATE_MODE_RGB_LAYERED)
     else if(u_mode == FFL_MODULATE_MODE_RGB_LAYERED)
     {
@@ -224,8 +211,9 @@ void main()
         color = texture2D(s_texture, v_texCoord);
         color = vec4(color.r * u_const1.rgb, 1.0);
     }
+    */
 //#endif
-    
+
 //#ifdef FFL_LIGHT_MODE_ENABLE
     if(u_light_enable)
     {
@@ -237,16 +225,16 @@ void main()
 
         /// 視線ベクトル
         mediump vec3 eye = normalize(-v_position.xyz);
-        
+
         // ライトの向き
         mediump float fDot = calculateDot(u_light_dir, norm);
 
         /// Diffuse計算
         mediump vec3 diffuse = calculateDiffuseColor(u_light_diffuse.xyz, u_material_diffuse.xyz, fDot);
-        
+
         /// Specular計算
         mediump float specularBlinn = calculateBlinnSpecular(u_light_dir, norm, eye, u_material_specular_power);
-        
+
         /// Specularの値を確保する変数を宣言
         mediump float reflection;
         mediump float strength = v_color.g;
@@ -266,7 +254,7 @@ void main()
         mediump vec3 specular = calculateSpecularColor(u_light_specular.xyz, u_material_specular.xyz, reflection, strength);
 
         // リムの色を計算
-        mediump vec3 rimColor = calculateRimColor(u_rim_color.rgb, norm.z, rimWidth, u_rim_power);
+        mediump vec3 rimColor = calculateRimColor(u_rim_color.rgb, norm.z, v_color.a, u_rim_power);
 
         // カラーの計算
         color.rgb = (ambient + diffuse) * color.rgb + specular + rimColor;

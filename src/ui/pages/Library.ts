@@ -15,7 +15,7 @@ export const savedMiiCount = async () =>
 export const miiIconUrl = (data: string) =>
   `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
     data
-  )}&shaderType=2&type=face&width=180&verifyCharInfo=0`;
+  )}&shaderType=0&type=face&width=180&verifyCharInfo=0`;
 
 export async function Library() {
   function shutdown(): Promise<void> {

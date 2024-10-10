@@ -351,6 +351,10 @@ input {
   grid-template-rows: auto 1fr;
   animation: fadeIn $animation-duration $easing-function;
 
+  &.not-fixed {
+    position: static;
+  }
+
   &.closing {
     pointer-events: none;
     animation: fadeOut $animation-duration $easing-function !important;
