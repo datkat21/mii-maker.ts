@@ -253,9 +253,18 @@ const miiEdit = (mii: MiiLocalforage, shutdown: () => any) => {
       {
         text: "Delete",
         async callback() {
-          await localforage.removeItem(mii.id);
-          await shutdown();
-          Library();
+          if (
+            await Modal.prompt(
+              "Warning",
+              "Are you sure you want to delete this Mii?",
+              "body",
+              true
+            )
+          ) {
+            await localforage.removeItem(mii.id);
+            await shutdown();
+            Library();
+          }
         },
       },
       {
