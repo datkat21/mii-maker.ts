@@ -214,6 +214,12 @@ void main()
     */
 //#endif
 
+    // avoids little outline around mask elements
+    if(color.a == 0.0f)
+    {
+        discard;
+    }
+
 //#ifdef FFL_LIGHT_MODE_ENABLE
     if(u_light_enable)
     {
