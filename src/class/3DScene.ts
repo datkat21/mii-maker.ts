@@ -384,7 +384,7 @@ export class Mii3DScene {
 
         // ffl shader is disabled for now
         // due to face texture and lighting issues
-        // this.#traverseFFLShaderTest(GLB.scene);
+        this.#traverseFFLShaderTest(GLB.scene);
         this.#scene.remove(...head);
         this.#scene.add(GLB.scene);
         break;
