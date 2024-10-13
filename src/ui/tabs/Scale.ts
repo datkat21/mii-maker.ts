@@ -4,6 +4,7 @@ import {
 } from "../components/MiiPagedFeatureSet";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function ScaleTab(data: TabRenderInit) {
   data.container.append(
@@ -22,6 +23,7 @@ export function ScaleTab(data: TabRenderInit) {
               min: 0,
               max: 127,
               forceRender: false,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Slider,
@@ -31,6 +33,7 @@ export function ScaleTab(data: TabRenderInit) {
               min: 0,
               max: 127,
               forceRender: false,
+              part: RenderPart.Face,
             },
           ],
         },

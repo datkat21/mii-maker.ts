@@ -8,6 +8,7 @@ import {
 import Modal from "../components/Modal";
 import { MainMenu } from "./MainMenu";
 import { Buffer as Buf } from "../../../node_modules/buffer/index";
+import { RenderPart } from "../../class/MiiEditor";
 
 // settings is unfinished, will not be accessible for now
 export function Settings() {
@@ -34,6 +35,7 @@ export function Settings() {
                 iconOff: "No",
                 iconOn: "Yes",
                 property: "useFFLShader",
+                part: RenderPart.Head,
               },
             ],
           },
@@ -45,6 +47,7 @@ export function Settings() {
                 iconOff: "Light",
                 iconOn: "Dark",
                 property: "darkTheme",
+                part: RenderPart.Head,
               },
             ],
           },
@@ -52,7 +55,6 @@ export function Settings() {
         onChange(mii, forceRender) {
           console.log("changed:", mii);
         },
-
       })
     );
 }

@@ -6,6 +6,7 @@ import { MiiGlassesColorTable } from "../../constants/ColorTables";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function GlassesTab(data: TabRenderInit) {
   data.container.append(
@@ -19,6 +20,7 @@ export function GlassesTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: `<img src="./assets/img/glasses/${k}.png" width="84" height="84" />`,
+            part: RenderPart.Head,
           })),
         },
         glassesColor: {
@@ -27,6 +29,7 @@ export function GlassesTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             color: MiiGlassesColorTable[k],
+            part: RenderPart.Head,
           })),
         },
         glassesPosition: {
@@ -41,6 +44,7 @@ export function GlassesTab(data: TabRenderInit) {
               soundEnd: "position_up",
               min: 3,
               max: 18,
+              part: RenderPart.Head,
             },
             {
               type: FeatureSetType.Range,
@@ -51,6 +55,7 @@ export function GlassesTab(data: TabRenderInit) {
               soundEnd: "scale_up",
               min: 0,
               max: 8,
+              part: RenderPart.Head,
             },
           ],
         },

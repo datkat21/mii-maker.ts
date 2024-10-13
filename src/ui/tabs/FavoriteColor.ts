@@ -6,6 +6,7 @@ import { MiiFavoriteColorLookupTable } from "../../constants/ColorTables";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import { numToHex } from "../../util/NumberToHexString";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function FavoriteColorTab(data: TabRenderInit) {
   data.container.append(
@@ -20,6 +21,7 @@ export function FavoriteColorTab(data: TabRenderInit) {
             forceRender: false,
             value: k,
             color: numToHex(MiiFavoriteColorLookupTable[k]),
+            part: RenderPart.Head,
           })),
         },
       },

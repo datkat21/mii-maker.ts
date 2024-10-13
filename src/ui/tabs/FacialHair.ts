@@ -6,6 +6,7 @@ import { MiiHairColorTable } from "../../constants/ColorTables";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function FacialHairTab(data: TabRenderInit) {
   data.container.append(
@@ -19,6 +20,7 @@ export function FacialHairTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: `<img src="./assets/img/mustache/${k}.png" width="84" height="84" />`,
+            part: RenderPart.Face,
           })),
         },
         mustachePosition: {
@@ -33,6 +35,7 @@ export function FacialHairTab(data: TabRenderInit) {
               soundEnd: "position_up",
               min: 0,
               max: 16,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -43,6 +46,7 @@ export function FacialHairTab(data: TabRenderInit) {
               soundEnd: "scale_up",
               min: 0,
               max: 8,
+              part: RenderPart.Face,
             },
           ],
         },
@@ -52,6 +56,7 @@ export function FacialHairTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: `<img src="./assets/img/beard/${k}.png" width="84" height="84" />`,
+            part: RenderPart.Head,
           })),
         },
         facialHairColor: {
@@ -60,6 +65,7 @@ export function FacialHairTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             color: MiiHairColorTable[k],
+            part: RenderPart.Head,
           })),
         },
       },

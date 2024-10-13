@@ -6,6 +6,7 @@ import {
 import { encryptAndEncodeVer3StoreDataToQRCodeFormat } from "./EncodeQRCode.js";
 import Mii from "../external/mii-js/mii.js";
 import { Buffer as Buf } from "../../node_modules/buffer/index.js";
+import { Config } from "../config.js";
 
 const ver3Format = supportedFormats.find(
   (f) => f.className === "Gen2Wiiu3dsMiitomo"
@@ -41,7 +42,7 @@ const makeQrCodeImage = async (mii: string): Promise<HTMLImageElement> => {
 export const getMiiRender = async (mii: string): Promise<HTMLImageElement> => {
   const blob = await (
     await fetch(
-      `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
+      `${Config.renderer.renderHeadshotURLNoParams}?data=${encodeURIComponent(
         mii
       )}&shaderType=0&type=face&width=720&verifyCharInfo=0`
     )

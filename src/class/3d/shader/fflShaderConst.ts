@@ -2,6 +2,17 @@
 import * as THREE from "three";
 // Material table for FFLDefaultShader mapping to FFLModulateType
 // Reference: https://github.com/aboood40091/FFL-Testing/blob/master/src/Shader.cpp
+export enum cMaterialName {
+  FFL_MODULATE_TYPE_SHAPE_FACELINE,
+  FFL_MODULATE_TYPE_SHAPE_BEARD,
+  FFL_MODULATE_TYPE_SHAPE_NOSE,
+  FFL_MODULATE_TYPE_SHAPE_FOREHEAD,
+  FFL_MODULATE_TYPE_SHAPE_HAIR,
+  FFL_MODULATE_TYPE_SHAPE_CAP,
+  FFL_MODULATE_TYPE_SHAPE_MASK,
+  FFL_MODULATE_TYPE_SHAPE_NOSELINE,
+  FFL_MODULATE_TYPE_SHAPE_GLASS,
+}
 export const cMaterialParam = [
   {
     // FFL_MODULATE_TYPE_SHAPE_FACELINE

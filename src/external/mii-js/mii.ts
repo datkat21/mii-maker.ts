@@ -5,8 +5,9 @@ import ExtendedBitStream from "./extendedBitStream";
 import Util from "./util";
 import { Buffer } from "../../../node_modules/buffer/index";
 import assert from "../assert/assert";
+import { Config } from "../../config";
 
-const STUDIO_RENDER_URL_BASE = "https://mii-unsecure.ariankordi.net/miis/image";
+const STUDIO_RENDER_URL_BASE = Config.renderer.baseURL;
 const STUDIO_ASSET_URL_BASE = "https://mii-studio.akamaized.net/editor/1";
 const STUDIO_ASSET_FILE_TYPE = "webp";
 
@@ -852,6 +853,7 @@ export default class Mii {
 
     if (params.ext) {
       fileExt = params.ext;
+      delete params["ext"];
     }
 
     // TODO - Assert and error out instead of setting defaults?

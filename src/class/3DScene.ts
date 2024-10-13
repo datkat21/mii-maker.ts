@@ -8,6 +8,7 @@ import {
   cLightDiffuse,
   cLightDir,
   cLightSpecular,
+  cMaterialName,
   cMaterialParam,
   cRimColor,
   cRimPower,
@@ -17,6 +18,9 @@ import {
   fflFragmentShader,
   fflVertexShader,
 } from "./3d/shader/FFLShader";
+import { RenderPart } from "./MiiEditor";
+import { Config } from "../config";
+import { Buffer } from "../../node_modules/buffer";
 
 export enum CameraPosition {
   MiiHead,
@@ -26,7 +30,8 @@ export enum CameraPosition {
 export class Mii3DScene {
   #camera: THREE.PerspectiveCamera;
   #controls: CameraControls;
-  #loader: GLTFLoader;
+  #textureLoader: THREE.TextureLoader;
+  #gltfLoader: GLTFLoader;
   #scene: THREE.Scene;
   #renderer: THREE.WebGLRenderer;
   #parent: HTMLElement;
@@ -116,7 +121,8 @@ export class Mii3DScene {
       this.#controls.update(delta);
     });
 
-    this.#loader = new GLTFLoader();
+    this.#textureLoader = new THREE.TextureLoader();
+    this.#gltfLoader = new GLTFLoader();
 
     this.mii = mii;
 
@@ -196,11 +202,11 @@ export class Mii3DScene {
   }
   async #addBody() {
     const setupMiiHeadAnim = async () => {
-      const glb = await this.#loader.loadAsync("./miiHeadAnim.glb");
+      const glb = await this.#gltfLoader.loadAsync("./miiHeadAnim.glb");
       this.animations.set("HeadBob", glb.animations[0]);
     };
     const setupMiiBody = async (path: string, type: "m" | "f") => {
-      const glb = await this.#loader.loadAsync(path);
+      const glb = await this.#gltfLoader.loadAsync(path);
 
       console.log(glb);
 
@@ -344,75 +350,142 @@ export class Mii3DScene {
   fadeIn() {
     this.getRendererElement().style.opacity = "1";
   }
-  async updateMiiHead() {
+  async updateMiiHead(renderPart: RenderPart = RenderPart.Head) {
     if (!this.ready) {
       console.log("first time loading head");
       // return;
     }
     let head = this.#scene.getObjectsByProperty("name", "MiiHead");
 
-    const GLB = await this.#loader.loadAsync(
-      this.mii.studioUrl({
-        ext: "glb",
-      } as unknown as any)
-    );
+    switch (renderPart) {
+      case RenderPart.Head:
+        if (head.length > 0) {
+          head.forEach((h) => {
+            // Dispose of old head materials
+            h.traverse((c) => {
+              let child = c as THREE.Mesh;
+              if (child.isMesh) {
+                child.geometry.dispose();
+                const mat = child.material as THREE.MeshBasicMaterial;
+                if (mat.map) mat.map.dispose();
+                mat.dispose();
+              }
+            });
+          });
+        }
+        const GLB = await this.#gltfLoader.loadAsync(
+          this.mii.studioUrl({
+            ext: "glb",
+          } as unknown as any)
+        );
 
-    if (head.length > 0) {
-      this.#scene.remove(...head);
-      head.forEach((h) => {
-        // Dispose of old head materials
-        h.traverse((c) => {
-          let child = c as THREE.Mesh;
-          if (child.isMesh) {
-            child.geometry.dispose();
-            const mat = child.material as THREE.MeshBasicMaterial;
-            if (mat.map) mat.map.dispose();
-            mat.dispose();
-          }
-        });
-      });
+        GLB.scene.name = "MiiHead";
+        GLB.scene.scale.set(0.12, 0.12, 0.12);
+
+        // ffl shader is disabled for now
+        // due to face texture and lighting issues
+        // this.#traverseFFLShaderTest(GLB.scene);
+        this.#scene.remove(...head);
+        this.#scene.add(GLB.scene);
+        break;
+      case RenderPart.Face:
+        if (head.length > 0) {
+          head.forEach((h) => {
+            // Dispose of old head materials
+            h.traverse((c) => {
+              let child = c as THREE.Mesh;
+              if (child.isMesh) {
+                if (child.geometry.userData) {
+                  const data = child.geometry.userData as {
+                    cullMode: number;
+                    modulateColor: number[];
+                    modulateMode: number;
+                    modulateType: number;
+                  };
+                  if (data.modulateMode) {
+                    if (data.modulateType === 6) {
+                      // found face!!
+                      (async () => {
+                        const mat = child.material as THREE.MeshBasicMaterial;
+
+                        // throw out old texture!
+                        // const oldMap = mat.map!;
+                        const oldMat = mat;
+
+                        // console.log(mat, mat.map!);
+
+                        const tex = await this.#textureLoader.loadAsync(
+                          Config.renderer.renderFaceURL +
+                            "&data=" +
+                            encodeURIComponent(
+                              Buffer.from(this.mii.encode()).toString("base64")
+                            )
+                        );
+
+                        if (tex) {
+                          tex.flipY = false;
+                          tex.colorSpace = "srgb";
+                          //@ts-expect-error ???
+                          tex.transparent = true;
+
+                          child.material = new THREE.MeshStandardMaterial({
+                            map: tex,
+                            emissiveIntensity: 1,
+                            transparent: true,
+                            metalness: 1,
+                            toneMapped: true,
+                            alphaTest: 0.5,
+                          });
+                          // for (const key in child.material) {
+                          //   if (
+                          //     (oldMat as any)[key] !==
+                          //     (child.material as any)[key]
+                          //   ) {
+                          //     console.log(
+                          //       "MAT DIFF:",
+                          //       key,
+                          //       (oldMat as any)[key],
+                          //       "vs.",
+                          //       (child.material as any)[key]
+                          //     );
+                          //   }
+                          // }
+                          // for (const key in tex) {
+                          //   if ((oldMap as any)[key] !== (tex as any)[key]) {
+                          //     console.log(
+                          //       "MAP DIFF:",
+                          //       key,
+                          //       (oldMap as any)[key],
+                          //       "vs.",
+                          //       (tex as any)[key]
+                          //     );
+                          //   }
+                          // }
+
+                          oldMat.dispose();
+                          // oldMap.dispose();
+                        }
+                      })();
+                    }
+                  }
+                }
+              }
+            });
+          });
+        }
+        break;
     }
 
-    GLB.scene.name = "MiiHead";
-    GLB.scene.scale.set(0.12, 0.12, 0.12);
-
-    // ffl shader is disabled for now
-    // due to face texture and lighting issues
-    // // this.#traverseFFLShaderTest(GLB.scene);
-    this.#scene.add(GLB.scene);
-
     // use head bob animation from animations source
-    const clip = this.animations.get("HeadBob")!;
+    // const clip = this.animations.get("HeadBob")!;
 
-    this.#playAnimation(GLB.scene, "MiiHeadBobClip", clip);
-
-    // hack to fix inverted Mii head..
-    // if (this.mii.flipHair) {
-    //   (
-    //     (GLB.scene.getObjectByName("mesh_3") as THREE.Mesh)
-    //       .material as THREE.MeshBasicMaterial
-    //   ).side = THREE.BackSide;
-    //   (
-    //     (GLB.scene.getObjectByName("mesh_2") as THREE.Mesh)
-    //       .material as THREE.MeshBasicMaterial
-    //   ).side = THREE.BackSide;
-    // }
-
-    // GLB.scene.children.forEach((c) => {
-    //   // (c as any).material.metalness = 0;
-    //   // (c as any).material.roughness = 0.5;
-    //   console.log(c);
-    // });
-    console.log(GLB);
+    // this.#playAnimation(GLB.scene, "MiiHeadBobClip", clip);
 
     this.headReady = true;
     this.fadeIn();
     this.updateBody();
   }
-  #traverseFFLShaderTest(
-    model: THREE.Group<THREE.Object3DEventMap>,
-    shouldTraverseFurther: boolean = false
-  ) {
+  #traverseFFLShaderTest(model: THREE.Group<THREE.Object3DEventMap>) {
     // Traverse the model to access its meshes
     model.traverse((n) => {
       const node = n as THREE.Mesh;

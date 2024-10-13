@@ -6,6 +6,7 @@ import { MiiEyeColorTable } from "../../constants/ColorTables";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function EyeTab(data: TabRenderInit) {
   data.container.append(
@@ -20,6 +21,7 @@ export function EyeTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: data.icons.eyes[k],
+            part: RenderPart.Face,
           })),
           // MiiEyeTable
           // ),
@@ -30,6 +32,7 @@ export function EyeTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             color: MiiEyeColorTable[k],
+            part: RenderPart.Face,
           })),
         },
         eyePosition: {
@@ -44,6 +47,7 @@ export function EyeTab(data: TabRenderInit) {
               soundEnd: "position_up",
               min: 0,
               max: 18,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -54,6 +58,7 @@ export function EyeTab(data: TabRenderInit) {
               soundEnd: "move_apart",
               min: 0,
               max: 12,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -64,6 +69,7 @@ export function EyeTab(data: TabRenderInit) {
               soundEnd: "rotate_ccw",
               min: 0,
               max: 7,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -74,6 +80,7 @@ export function EyeTab(data: TabRenderInit) {
               soundEnd: "scale_up",
               min: 0,
               max: 7,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -84,6 +91,7 @@ export function EyeTab(data: TabRenderInit) {
               soundEnd: "vert_stretch_up",
               min: 0,
               max: 6,
+              part: RenderPart.Face,
             },
           ],
         },

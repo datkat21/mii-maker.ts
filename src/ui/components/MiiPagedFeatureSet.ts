@@ -3,6 +3,7 @@ import Mii from "../../external/mii-js/mii";
 import { TabList, TabListType, type Tab } from "./TabList";
 import md5 from "md5";
 import { playSound } from "../../class/audio/SoundManager";
+import type { RenderPart } from "../../class/MiiEditor";
 
 export enum FeatureSetType {
   Icon,
@@ -12,6 +13,7 @@ export enum FeatureSetType {
 }
 export interface FeatureSetIconItem {
   type: FeatureSetType.Icon;
+  part: RenderPart;
   sound?: string;
   icon?: string;
   color?: string;
@@ -20,6 +22,7 @@ export interface FeatureSetIconItem {
 }
 export interface FeatureSetRangeItem {
   type: FeatureSetType.Range;
+  part: RenderPart;
   iconStart: string;
   iconEnd: string;
   soundStart?: string;
@@ -31,6 +34,7 @@ export interface FeatureSetRangeItem {
 }
 export interface FeatureSetSliderItem {
   type: FeatureSetType.Slider;
+  part: RenderPart;
   iconStart: string;
   iconEnd: string;
   soundStart?: string;
@@ -42,6 +46,7 @@ export interface FeatureSetSliderItem {
 }
 export interface FeatureSetSwitchItem {
   type: FeatureSetType.Switch;
+  part: RenderPart;
   iconOff: string;
   iconOn: string;
   soundOff?: string;
@@ -63,7 +68,7 @@ export interface FeatureSetEntry {
 
 export interface FeatureSet {
   mii?: any;
-  onChange: (mii: Mii, forceRender: boolean) => void;
+  onChange: (mii: Mii, forceRender: boolean, part: RenderPart) => void;
   entries: Record<string, FeatureSetEntry>;
   // pages: FeatureSetPage[];
 }
@@ -101,7 +106,7 @@ export function MiiPagedFeatureSet(set: FeatureSet) {
               }
             }
 
-            const update = () => set.onChange(tmpMii, forceRender);
+            const update = () => set.onChange(tmpMii, forceRender, item.part);
 
             switch (item.type) {
               case FeatureSetType.Icon:

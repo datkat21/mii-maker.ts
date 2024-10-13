@@ -6,6 +6,7 @@ import EditorIcons from "../../constants/EditorIcons";
 import { MiiHairColorTable } from "../../constants/ColorTables";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import { ArrayNum } from "../../util/NumberArray";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function HairTab(data: TabRenderInit) {
   data.container.append(
@@ -19,6 +20,7 @@ export function HairTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: `<img src="./assets/img/hair/${k}.png" width="84" height="84" />`,
+            part: RenderPart.Head,
           })),
         },
         hairColor: {
@@ -27,6 +29,7 @@ export function HairTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             color: MiiHairColorTable[k],
+            part: RenderPart.Head,
           })),
         },
         hairPosition: {
@@ -37,6 +40,7 @@ export function HairTab(data: TabRenderInit) {
               iconOff: EditorIcons.positionHairFlip,
               iconOn: EditorIcons.positionHairFlipped,
               property: "flipHair",
+              part: RenderPart.Head,
             },
           ],
         },

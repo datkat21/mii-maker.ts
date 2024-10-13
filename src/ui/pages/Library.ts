@@ -9,12 +9,13 @@ import Loader from "../components/Loader";
 import { AddButtonSounds } from "../../util/AddButtonSounds";
 import { QRCodeCanvas } from "../../util/miiQrImage";
 import { Link } from "../components/Link";
+import { Config } from "../../config";
 export const savedMiiCount = async () =>
   (await localforage.keys()).filter((k) => k.startsWith("mii-")).length;
 export const newMiiId = async () =>
   `mii-${await savedMiiCount()}-${Date.now()}`;
 export const miiIconUrl = (data: string) =>
-  `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
+  `${Config.renderer.renderHeadshotURLNoParams}?data=${encodeURIComponent(
     data
   )}&shaderType=0&type=face&width=180&verifyCharInfo=0`;
 
@@ -121,13 +122,16 @@ export async function Library(highlightMiiId?: string) {
       .appendMany(
         new Html("span").text("Credits"),
         AddButtonSounds(
-          Link("Source code", "https://github.com/datkat21/mii-maker-real")
+          Link("Source code by datkat21", "https://github.com/datkat21/mii-maker-real")
         ),
         AddButtonSounds(
           Link(
             "Mii Rendering API by ariankordi",
             "https://mii-unsecure.ariankordi.net"
           )
+        ),
+        AddButtonSounds(
+          Link("Mii Maker Music by objecty", "https://x.com/objecty_twitt")
         )
       )
   );

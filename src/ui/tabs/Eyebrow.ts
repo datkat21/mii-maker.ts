@@ -6,6 +6,7 @@ import { MiiHairColorTable } from "../../constants/ColorTables";
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function EyebrowTab(data: TabRenderInit) {
   data.container.append(
@@ -19,6 +20,7 @@ export function EyebrowTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: data.icons.eyebrows[k],
+            part: RenderPart.Face,
           })),
         },
         eyebrowColor: {
@@ -27,6 +29,7 @@ export function EyebrowTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             color: MiiHairColorTable[k],
+            part: RenderPart.Face,
           })),
         },
         eyePosition: {
@@ -41,6 +44,7 @@ export function EyebrowTab(data: TabRenderInit) {
               soundEnd: "position_up",
               min: 3,
               max: 18,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -51,6 +55,7 @@ export function EyebrowTab(data: TabRenderInit) {
               soundEnd: "move_apart",
               min: 0,
               max: 12,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -61,6 +66,7 @@ export function EyebrowTab(data: TabRenderInit) {
               soundEnd: "rotate_ccw",
               min: 0,
               max: 11,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -71,6 +77,7 @@ export function EyebrowTab(data: TabRenderInit) {
               soundEnd: "scale_up",
               min: 0,
               max: 8,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -81,6 +88,7 @@ export function EyebrowTab(data: TabRenderInit) {
               soundEnd: "vert_stretch_up",
               min: 0,
               max: 6,
+              part: RenderPart.Face,
             },
           ],
         },

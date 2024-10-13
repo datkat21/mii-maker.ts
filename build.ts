@@ -16,9 +16,9 @@ export async function compile(
     emitDCEAnnotations: true,
     // sourcemap: "linked",
     minify: {
-      identifiers: true,
-      syntax: true,
-      whitespace: true,
+      identifiers: false,
+      syntax: false,
+      whitespace: false,
     },
   }).catch((e) => {
     console.error("Failed to build:", e);

@@ -27,6 +27,7 @@ import { MoleTab } from "../ui/tabs/Mole";
 import { EyebrowTab } from "../ui/tabs/Eyebrow";
 import { GlassesTab } from "../ui/tabs/Glasses";
 import localforage from "localforage";
+import { Config } from "../config";
 
 export enum MiiGender {
   Male,
@@ -48,6 +49,11 @@ export type IconSet = {
   mole: string[];
   glasses: string[];
 };
+
+export enum RenderPart {
+  Head,
+  Face,
+}
 
 export class MiiEditor {
   mii: Mii;
@@ -209,10 +215,10 @@ export class MiiEditor {
         if (this.ui.scene) this.ui.scene.focusCamera(CameraFocusPart);
         await Tab({
           container: content,
-          callback: (mii, forceRender) => {
+          callback: (mii, forceRender, renderPart) => {
             this.mii = mii;
             // use of forceRender forces reload of the head in 3D mode
-            this.render(forceRender);
+            this.render(forceRender, renderPart);
             this.#updateCssVars();
             this.dirty = true;
           },
@@ -279,7 +285,10 @@ export class MiiEditor {
     this.ui.base.appendMany(tabs.list, tabs.content);
   }
 
-  async render(forceReloadHead: boolean = true) {
+  async render(
+    forceReloadHead: boolean = true,
+    renderPart: RenderPart = RenderPart.Head
+  ) {
     switch (this.renderingMode) {
       case RenderMode.Image:
         if (this.ui.mii.qs("img") === null) {
@@ -292,9 +301,9 @@ export class MiiEditor {
           .qs("img")
           ?.style({ display: "block" })
           .attr({
-            src: `https://mii-unsecure.ariankordi.net/miis/image.png?data=${encodeURIComponent(
+            src: `${Config.renderer.render3DHeadURL}&${encodeURIComponent(
               Buffer.from(this.mii.encode()).toString("base64")
-            )}&shaderType=0&type=face&width=260&verifyCharInfo=0`,
+            )}`,
           });
         break;
       case RenderMode.ThreeJs:
@@ -308,7 +317,7 @@ export class MiiEditor {
         this.ui.scene.mii = this.mii;
         if (forceReloadHead) {
           // reload head and body
-          this.ui.scene.updateMiiHead();
+          this.ui.scene.updateMiiHead(renderPart);
         } else {
           // only reload body
           this.ui.scene.updateBody();

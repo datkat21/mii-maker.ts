@@ -6,6 +6,7 @@ import EditorIcons from "../../constants/EditorIcons";
 import { MiiSkinColorTable } from "../../constants/ColorTables";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import { ArrayNum } from "../../util/NumberArray";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function HeadTab(data: TabRenderInit) {
   data.container.append(
@@ -19,6 +20,7 @@ export function HeadTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: data.icons.face[k],
+            part: RenderPart.Head,
           })),
         },
         makeupType: {
@@ -27,6 +29,7 @@ export function HeadTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: data.icons.makeup[k],
+            part: RenderPart.Head,
           })),
         },
         wrinklesType: {
@@ -35,6 +38,7 @@ export function HeadTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: data.icons.wrinkles[k],
+            part: RenderPart.Head,
           })),
         },
         skinColor: {
@@ -43,6 +47,7 @@ export function HeadTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             color: MiiSkinColorTable[k],
+            part: RenderPart.Head,
           })),
         },
       },

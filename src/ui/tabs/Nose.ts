@@ -5,6 +5,7 @@ import {
 import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function NoseTab(data: TabRenderInit) {
   data.container.append(
@@ -18,6 +19,7 @@ export function NoseTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: data.icons.nose[k],
+            part: RenderPart.Head,
           })),
         },
         nosePosition: {
@@ -32,6 +34,7 @@ export function NoseTab(data: TabRenderInit) {
               soundEnd: "position_up",
               min: 0,
               max: 18,
+              part: RenderPart.Head,
             },
             {
               type: FeatureSetType.Range,
@@ -42,6 +45,7 @@ export function NoseTab(data: TabRenderInit) {
               soundEnd: "scale_up",
               min: 0,
               max: 8,
+              part: RenderPart.Head,
             },
           ],
         },

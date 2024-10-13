@@ -6,6 +6,7 @@ import { ArrayNum } from "../../util/NumberArray";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import EditorIcons from "../../constants/EditorIcons";
 import { MiiMouthColorTable } from "../../constants/ColorTables";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function MouthTab(data: TabRenderInit) {
   data.container.append(
@@ -19,6 +20,7 @@ export function MouthTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             icon: data.icons.mouth[k],
+            part: RenderPart.Face,
           })),
         },
         mouthColor: {
@@ -27,6 +29,7 @@ export function MouthTab(data: TabRenderInit) {
             type: FeatureSetType.Icon,
             value: k,
             color: MiiMouthColorTable[k],
+            part: RenderPart.Face,
           })),
         },
         mouthPosition: {
@@ -41,6 +44,7 @@ export function MouthTab(data: TabRenderInit) {
               soundEnd: "position_up",
               min: 0,
               max: 18,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -51,6 +55,7 @@ export function MouthTab(data: TabRenderInit) {
               soundEnd: "scale_up",
               min: 0,
               max: 7,
+              part: RenderPart.Face,
             },
             {
               type: FeatureSetType.Range,
@@ -61,6 +66,7 @@ export function MouthTab(data: TabRenderInit) {
               soundEnd: "vert_stretch_up",
               min: 0,
               max: 6,
+              part: RenderPart.Face,
             },
           ],
         },

@@ -11,6 +11,7 @@ import {
   MiiPagedFeatureSet,
 } from "../components/MiiPagedFeatureSet";
 import EditorIcons from "../../constants/EditorIcons";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function MiscTab(data: TabRenderInit) {
   let tmpMii = new Mii(data.mii.encode());
@@ -118,6 +119,7 @@ export function MiscTab(data: TabRenderInit) {
                       property: "gender",
                       isNumber: true,
                       forceRender: false,
+                      part: RenderPart.Face,
                     },
                   ],
                 },
