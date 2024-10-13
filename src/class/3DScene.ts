@@ -384,9 +384,14 @@ export class Mii3DScene {
 
         // ffl shader is disabled for now
         // due to face texture and lighting issues
-        // this.#traverseFFLShaderTest(GLB.scene);
+        this.#traverseFFLShaderTest(GLB.scene);
         this.#scene.remove(...head);
         this.#scene.add(GLB.scene);
+
+        // use head bob animation from animations source
+        const clip = this.animations.get("HeadBob")!;
+        clip.tracks[0].name = "MiiHead.quaternion";
+        this.#playAnimation(GLB.scene, "MiiHeadBobClip", clip);
         break;
       case RenderPart.Face:
         if (head.length > 0) {
@@ -476,11 +481,6 @@ export class Mii3DScene {
         break;
     }
 
-    // use head bob animation from animations source
-    // const clip = this.animations.get("HeadBob")!;
-
-    // this.#playAnimation(GLB.scene, "MiiHeadBobClip", clip);
-
     this.headReady = true;
     this.fadeIn();
     this.updateBody();
@@ -532,7 +532,10 @@ export class Mii3DScene {
 
         // Define macros based on the presence of textures
         const defines: Record<string, any> = {};
-        if (originalMaterial.map) defines.USE_MAP = "";
+        if (originalMaterial.map) {
+          defines.USE_MAP = "";
+          originalMaterial.map.colorSpace = THREE.LinearSRGBColorSpace;
+        }
 
         // Function to Map FFLCullMode to three.js material side
         let side = originalMaterial.side;

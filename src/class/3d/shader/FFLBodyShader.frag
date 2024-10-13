@@ -1,5 +1,4 @@
 //#version 330 core
-
 uniform float SP_power;
 uniform vec3  ambient;
 uniform vec3  base;
