@@ -25,7 +25,7 @@ export class FFLBodyShaderMaterial extends THREE.ShaderMaterial {
       },
     });
 
-    this.name = "FFLShader";
+    this.name = "FFLBodyShader";
     this.glslVersion = "300 es";
     this.vertexShader = fflBodyVertexShader;
     this.fragmentShader = fflBodyFragmentShader;
