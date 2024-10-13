@@ -532,7 +532,10 @@ export class Mii3DScene {
 
         // Define macros based on the presence of textures
         const defines: Record<string, any> = {};
-        if (originalMaterial.map) defines.USE_MAP = "";
+        if (originalMaterial.map) {
+          defines.USE_MAP = "";
+          originalMaterial.map.colorSpace = THREE.LinearSRGBColorSpace;
+        }
 
         // Function to Map FFLCullMode to three.js material side
         let side = originalMaterial.side;
