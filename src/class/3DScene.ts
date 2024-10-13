@@ -387,6 +387,11 @@ export class Mii3DScene {
         this.#traverseFFLShaderTest(GLB.scene);
         this.#scene.remove(...head);
         this.#scene.add(GLB.scene);
+
+        // use head bob animation from animations source
+        const clip = this.animations.get("HeadBob")!;
+        clip.tracks[0].name = "MiiHead.quaternion";
+        this.#playAnimation(GLB.scene, "MiiHeadBobClip", clip);
         break;
       case RenderPart.Face:
         if (head.length > 0) {
@@ -475,11 +480,6 @@ export class Mii3DScene {
         }
         break;
     }
-
-    // use head bob animation from animations source
-    // const clip = this.animations.get("HeadBob")!;
-
-    // this.#playAnimation(GLB.scene, "MiiHeadBobClip", clip);
 
     this.headReady = true;
     this.fadeIn();
