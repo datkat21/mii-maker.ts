@@ -17,7 +17,7 @@ export function MiscTab(data: TabRenderInit) {
   let tmpMii = new Mii(data.mii.encode());
   const setProp = (prop: string, val: any) => {
     (tmpMii as any)[prop] = val;
-    data.callback(tmpMii, false);
+    data.callback(tmpMii, false, RenderPart.Head);
     return true;
   };
   data.container.append(
