@@ -301,7 +301,7 @@ export class MiiEditor {
           .qs("img")
           ?.style({ display: "block" })
           .attr({
-            src: `${Config.renderer.render3DHeadURL}&${encodeURIComponent(
+            src: `${Config.renderer.renderHeadshotURL}&data=${encodeURIComponent(
               Buffer.from(this.mii.encode()).toString("base64")
             )}`,
           });
