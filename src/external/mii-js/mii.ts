@@ -215,11 +215,11 @@ export default class Mii {
       Util.inRange(this.slotIndex, Util.range(10)),
       `Invalid Mii slot index. Got ${this.slotIndex}, expected 0-9`
     );
-    assert.strictEqual(
-      this.unknown1,
-      0,
-      `Invalid Mii unknown1. Got ${this.unknown1}, expected 0`
-    );
+    // assert.strictEqual(
+    //   this.unknown1,
+    //   0,
+    //   `Invalid Mii unknown1. Got ${this.unknown1}, expected 0`
+    // );
     assert.ok(
       Util.inRange(this.deviceOrigin, Util.range(0, 5)), // allow 0 for studio Miis that don't have info
       `Invalid Mii device origin. Got ${this.deviceOrigin}, expected 1-4`

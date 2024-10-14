@@ -17618,7 +17618,7 @@ var Config = {
     renderHeadshotURL: `${baseURL}.png?shaderType=0&type=face&width=260&verifyCharInfo=0`,
     renderHeadshotURLNoParams: `${baseURL}.png`,
     render3DHeadURL: `${baseURL}.glb?shaderType=0&type=face&width=260&verifyCharInfo=0`,
-    renderFaceURL: `${baseURL}.png?width=260&scale=1&drawStageMode=mask_only`,
+    renderFaceURL: `${baseURL}.png?width=312&scale=1&drawStageMode=mask_only`,
     randomUserURL: "???"
   },
   version: {
@@ -17790,7 +17790,6 @@ class Mii {
     import_assert.default.ok(Util.inRange(this.characterSet, Util.range(4)), `Invalid Mii region lock. Got ${this.characterSet}, expected 0-3`);
     import_assert.default.ok(Util.inRange(this.pageIndex, Util.range(10)), `Invalid Mii page index. Got ${this.pageIndex}, expected 0-9`);
     import_assert.default.ok(Util.inRange(this.slotIndex, Util.range(10)), `Invalid Mii slot index. Got ${this.slotIndex}, expected 0-9`);
-    import_assert.default.strictEqual(this.unknown1, 0, `Invalid Mii unknown1. Got ${this.unknown1}, expected 0`);
     import_assert.default.ok(Util.inRange(this.deviceOrigin, Util.range(0, 5)), `Invalid Mii device origin. Got ${this.deviceOrigin}, expected 1-4`);
     import_assert.default.strictEqual(this.systemId.length, 8, `Invalid Mii system ID size. Got ${this.systemId.length}, system IDs must be 8 bytes long`);
     import_assert.default.strictEqual(typeof this.normalMii, "boolean", `Invalid normal Mii flag. Got ${this.normalMii}, expected true or false`);

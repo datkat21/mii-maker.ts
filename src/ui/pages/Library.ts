@@ -58,16 +58,18 @@ export async function Library(highlightMiiId?: string) {
     );
   }
   for (const mii of miis) {
-    let miiContainer = new Html("div")
-      .class("library-list-mii")
-      .on("click", miiEdit(mii, shutdown));
+    let miiContainer = new Html("div").class("library-list-mii");
 
     AddButtonSounds(miiContainer);
 
     const miiData = new Mii(Buffer.from(mii.mii, "base64"));
 
+    miiContainer.on("click", miiEdit(mii, shutdown, miiData));
+
     try {
-      miiData.validate();
+      // prevent error when importing converted Wii-era data
+      miiData.unknown1 = 0;
+      miiData.unknown2 = 0;
 
       console.log(miiData.miiName + "'s birthPlatform:", miiData.deviceOrigin);
 
@@ -122,7 +124,10 @@ export async function Library(highlightMiiId?: string) {
       .appendMany(
         new Html("span").text("Credits"),
         AddButtonSounds(
-          Link("Source code by datkat21", "https://github.com/datkat21/mii-maker-real")
+          Link(
+            "Source code by datkat21",
+            "https://github.com/datkat21/mii-maker-real"
+          )
         ),
         AddButtonSounds(
           Link(
@@ -195,9 +200,10 @@ const miiCreateDialog = () => {
               f.readAsArrayBuffer(target.files![0]);
               f.onload = async () => {
                 try {
-                  const mii = new Mii(Buffer.from(f.result as ArrayBuffer));
+                  // prevent error when importing converted Wii-era data
+                  const miiData = Buffer.from(f.result as ArrayBuffer);
 
-                  mii.validate();
+                  const mii = new Mii(miiData);
 
                   const miiDataToSave = mii.encode().toString("base64");
 
@@ -300,7 +306,7 @@ const miiCreateRandom = async () => {
     random.data
   );
 };
-const miiEdit = (mii: MiiLocalforage, shutdown: () => any) => {
+const miiEdit = (mii: MiiLocalforage, shutdown: () => any, miiData: Mii) => {
   return () => {
     const modal = Modal.modal(
       "Mii Options",
@@ -340,7 +346,7 @@ const miiEdit = (mii: MiiLocalforage, shutdown: () => any) => {
       {
         text: "Export",
         async callback() {
-          miiExport(mii);
+          miiExport(mii, miiData);
         },
       },
       {
@@ -358,7 +364,7 @@ const miiEdit = (mii: MiiLocalforage, shutdown: () => any) => {
   };
 };
 
-const miiExport = (mii: MiiLocalforage) => {
+const miiExport = (mii: MiiLocalforage, miiData: Mii) => {
   Modal.modal(
     "Mii Export",
     "What would you like to do?",
@@ -378,9 +384,32 @@ const miiExport = (mii: MiiLocalforage) => {
       },
     },
     {
-      text: "Get FFSD data",
+      text: "Get FFSD (text)",
       async callback() {
         return Modal.alert("FFSD code", mii.mii, "body", true);
+      },
+    },
+    {
+      text: "Get FFSD (file)",
+      async callback() {
+        const blob = new Blob([Buffer.from(mii.mii, "base64")]);
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.download = miiData.miiName + ".ffsd";
+        document.body.appendChild(a);
+        a.click();
+
+        requestAnimationFrame(() => {
+          a.remove();
+        });
+
+        // free URL after some time
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+        }, 2000);
       },
     },
     {
