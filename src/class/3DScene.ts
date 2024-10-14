@@ -222,7 +222,7 @@ export class Mii3DScene {
 
       glb.scene.name = `${type}-body-root`;
 
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         this.#scene.add(glb.scene);
       });
 
@@ -231,15 +231,6 @@ export class Mii3DScene {
         new THREE.MeshStandardMaterial({ color: 0xffffff });
       (glb.scene.getObjectByName(`legs_${type}`)! as THREE.Mesh).material =
         new THREE.MeshStandardMaterial({ color: 0x666666 });
-
-      // this.#traverseFFLShaderTest(
-      //   glb.scene.getObjectByName(`body_${type}`)! as any,
-      //   false
-      // );
-      // this.#traverseFFLShaderTest(
-      //   glb.scene.getObjectByName(`legs_${type}`)! as any,
-      //   false
-      // );
 
       if (this.#scene.getObjectByName("m"))
         this.#scene.getObjectByName("m")!.visible = false;
@@ -412,12 +403,7 @@ export class Mii3DScene {
                       // found face!!
                       (async () => {
                         const mat = child.material as THREE.MeshBasicMaterial;
-
-                        // throw out old texture!
-                        // const oldMap = mat.map!;
                         const oldMat = mat;
-
-                        // console.log(mat, mat.map!);
 
                         const tex = await this.#textureLoader.loadAsync(
                           Config.renderer.renderFaceURL +
@@ -428,10 +414,9 @@ export class Mii3DScene {
                         );
 
                         if (tex) {
+                          // Initialize the texture on the GPU to prevent lag frames
                           tex.flipY = false;
-                          tex.colorSpace = "srgb";
-                          //@ts-expect-error ???
-                          tex.transparent = true;
+                          this.#renderer.initTexture(tex);
 
                           child.material = new THREE.MeshStandardMaterial({
                             map: tex,
@@ -441,34 +426,11 @@ export class Mii3DScene {
                             toneMapped: true,
                             alphaTest: 0.5,
                           });
-                          // for (const key in child.material) {
-                          //   if (
-                          //     (oldMat as any)[key] !==
-                          //     (child.material as any)[key]
-                          //   ) {
-                          //     console.log(
-                          //       "MAT DIFF:",
-                          //       key,
-                          //       (oldMat as any)[key],
-                          //       "vs.",
-                          //       (child.material as any)[key]
-                          //     );
-                          //   }
-                          // }
-                          // for (const key in tex) {
-                          //   if ((oldMap as any)[key] !== (tex as any)[key]) {
-                          //     console.log(
-                          //       "MAP DIFF:",
-                          //       key,
-                          //       (oldMap as any)[key],
-                          //       "vs.",
-                          //       (tex as any)[key]
-                          //     );
-                          //   }
-                          // }
+
+                          // Now... Replace it with FFL shader material
+                          this.#traverseMesh(child);
 
                           oldMat.dispose();
-                          // oldMap.dispose();
                         }
                       })();
                     }
@@ -490,115 +452,107 @@ export class Mii3DScene {
     model.traverse((n) => {
       const node = n as THREE.Mesh;
       if (node.isMesh) {
-        const originalMaterial = node.material as THREE.MeshBasicMaterial;
-
-        // Access userData from geometry
-        const userData = node.geometry.userData;
-
-        // Retrieve modulateType and map to material parameters
-        const modulateType = userData.modulateType;
-        if (userData.modulateType === undefined)
-          console.warn(
-            `Mesh "${node.name}" is missing "modulateType" in userData.`
-          );
-
-        // HACK for now: disable lighting on mask, glass, noseline
-        // (Because there is some lighting bug affecting
-        // those that does not happen in FFL-Testing)
-        const lightEnable = modulateType > 5 ? false : true;
-        // Select material parameter based on the modulate type, default to faceline
-        const materialParam =
-          modulateType !== undefined
-            ? modulateType && modulateType < 9
-              ? cMaterialParam[modulateType]
-              : cMaterialParam[0]
-            : cMaterialParam[0];
-
-        // Retrieve modulateMode, defaulting to constant color
-        const modulateMode =
-          userData.modulateMode === undefined ? 0 : userData.modulateMode;
-
-        // Retrieve modulateColor (vec3)
-        let modulateColor;
-        if (!userData.modulateColor) {
-          console.warn(
-            `Mesh "${node.name}" is missing "modulateColor" in userData.`
-          );
-          // Default to red if missing
-          modulateColor = new THREE.Vector4(...[1, 0, 0], 1);
-        } else {
-          modulateColor = new THREE.Vector4(...userData.modulateColor, 1);
-        }
-
-        // Define macros based on the presence of textures
-        const defines: Record<string, any> = {};
-        if (originalMaterial.map) {
-          defines.USE_MAP = "";
-          originalMaterial.map.colorSpace = THREE.LinearSRGBColorSpace;
-        }
-
-        // Function to Map FFLCullMode to three.js material side
-        let side = originalMaterial.side;
-        if (userData.cullMode !== undefined) {
-          switch (userData.cullMode) {
-            case 0: // FFL_CULL_MODE_NONE
-              side = THREE.DoubleSide; // No culling
-              break;
-            case 1: // FFL_CULL_MODE_BACK
-              side = THREE.FrontSide; // Cull back faces, render front
-              break;
-            case 2: // FFL_CULL_MODE_FRONT
-              side = THREE.BackSide; // Cull front faces, render back
-              break;
-          }
-        }
-
-        // debugging code related to broken head mesh. shader will be disabled until it can be fixed
-        // console.log(node.name, "is using", userData.modulateMode);
-        // if (userData.modulateMode === 1) {
-        //   if (originalMaterial.map!.isTexture) {
-        //     console.log("head mesh has texture");
-        //     //@ts-expect-error G
-        //     window.headMeshMap = originalMaterial.map;
-        //     // console.log(node.name, "is using", originalMaterial.map);
-        //   }
-        // }
-
-        // Create a custom ShaderMaterial
-        const shaderMaterial = new THREE.ShaderMaterial({
-          vertexShader: fflVertexShader,
-          fragmentShader: fflFragmentShader,
-          uniforms: {
-            u_const1: { value: modulateColor },
-            u_light_ambient: { value: cLightAmbient },
-            u_light_diffuse: { value: cLightDiffuse },
-            u_light_specular: { value: cLightSpecular },
-            u_light_dir: { value: cLightDir },
-            u_light_enable: { value: lightEnable },
-            u_material_ambient: { value: materialParam.ambient },
-            u_material_diffuse: { value: materialParam.diffuse },
-            u_material_specular: { value: materialParam.specular },
-            u_material_specular_mode: { value: materialParam.specularMode },
-            u_material_specular_power: { value: materialParam.specularPower },
-            u_mode: { value: modulateMode },
-            u_rim_color: { value: cRimColor },
-            u_rim_power: { value: cRimPower },
-            s_texture: { value: originalMaterial.map },
-          },
-          defines: defines,
-          side: side,
-          // NOTE: usually these blend modes are
-          // only set for DrawXlu stage
-          blending: THREE.CustomBlending,
-          blendDstAlpha: THREE.OneFactor,
-          transparent: originalMaterial.transparent, // Handle transparency
-          alphaTest: originalMaterial.alphaTest, // Handle alpha testing
-        });
-
-        // Assign the custom material to the mesh
-        node.material = shaderMaterial;
+        this.#traverseMesh(node);
       }
     });
+  }
+  #traverseMesh(node: THREE.Mesh) {
+    const originalMaterial = node.material as THREE.MeshBasicMaterial;
+
+    // Access userData from geometry
+    const userData = node.geometry.userData;
+
+    // Retrieve modulateType and map to material parameters
+    const modulateType = userData.modulateType;
+    if (userData.modulateType === undefined)
+      console.warn(
+        `Mesh "${node.name}" is missing "modulateType" in userData.`
+      );
+
+    // HACK for now: disable lighting on mask, glass, noseline
+    // (Because there is some lighting bug affecting
+    // those that does not happen in FFL-Testing)
+    const lightEnable = modulateType > 5 ? false : true;
+    // Select material parameter based on the modulate type, default to faceline
+    const materialParam =
+      modulateType !== undefined
+        ? modulateType && modulateType < 9
+          ? cMaterialParam[modulateType]
+          : cMaterialParam[0]
+        : cMaterialParam[0];
+
+    // Retrieve modulateMode, defaulting to constant color
+    const modulateMode =
+      userData.modulateMode === undefined ? 0 : userData.modulateMode;
+
+    // Retrieve modulateColor (vec3)
+    let modulateColor;
+    if (!userData.modulateColor) {
+      console.warn(
+        `Mesh "${node.name}" is missing "modulateColor" in userData.`
+      );
+      // Default to red if missing
+      modulateColor = new THREE.Vector4(...[1, 0, 0], 1);
+    } else {
+      modulateColor = new THREE.Vector4(...userData.modulateColor, 1);
+    }
+
+    // Define macros based on the presence of textures
+    const defines: Record<string, any> = {};
+    if (originalMaterial.map) {
+      defines.USE_MAP = "";
+      originalMaterial.map.colorSpace = THREE.LinearSRGBColorSpace;
+    }
+
+    // Function to Map FFLCullMode to three.js material side
+    let side = originalMaterial.side;
+    if (userData.cullMode !== undefined) {
+      switch (userData.cullMode) {
+        case 0: // FFL_CULL_MODE_NONE
+          side = THREE.DoubleSide; // No culling
+          break;
+        case 1: // FFL_CULL_MODE_BACK
+          side = THREE.FrontSide; // Cull back faces, render front
+          break;
+        case 2: // FFL_CULL_MODE_FRONT
+          side = THREE.BackSide; // Cull front faces, render back
+          break;
+      }
+    }
+
+    // Create a custom ShaderMaterial
+    const shaderMaterial = new THREE.ShaderMaterial({
+      vertexShader: fflVertexShader,
+      fragmentShader: fflFragmentShader,
+      uniforms: {
+        u_const1: { value: modulateColor },
+        u_light_ambient: { value: cLightAmbient },
+        u_light_diffuse: { value: cLightDiffuse },
+        u_light_specular: { value: cLightSpecular },
+        u_light_dir: { value: cLightDir },
+        u_light_enable: { value: lightEnable },
+        u_material_ambient: { value: materialParam.ambient },
+        u_material_diffuse: { value: materialParam.diffuse },
+        u_material_specular: { value: materialParam.specular },
+        u_material_specular_mode: { value: materialParam.specularMode },
+        u_material_specular_power: { value: materialParam.specularPower },
+        u_mode: { value: modulateMode },
+        u_rim_color: { value: cRimColor },
+        u_rim_power: { value: cRimPower },
+        s_texture: { value: originalMaterial.map },
+      },
+      defines: defines,
+      side: side,
+      // NOTE: usually these blend modes are
+      // only set for DrawXlu stage
+      blending: THREE.CustomBlending,
+      blendDstAlpha: THREE.OneFactor,
+      transparent: originalMaterial.transparent, // Handle transparency
+      alphaTest: originalMaterial.alphaTest, // Handle alpha testing
+    });
+
+    // Assign the custom material to the mesh
+    node.material = shaderMaterial;
   }
 
   shutdown() {
