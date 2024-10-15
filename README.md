@@ -11,6 +11,7 @@ Create and share Miis online with just a few clicks!
 - A version of the [mii-unsecure.ariankordi.net](https://mii-unsecure.ariankordi.net) API by [ariankordi](https://github.com/ariankordi), used to generate 3D Mii heads and renders.
 - `mii-js` library used for interacting with Mii data in a JavaScript-friendly way
 - [Some code](https://github.com/datkat21/mii-maker-real/tree/master/src/external/mii-frontend) "borrowed" from arian's website.
+- Custom Mii Maker music by [objecty](https://x.com/objecty)
 
 ## Features
 
