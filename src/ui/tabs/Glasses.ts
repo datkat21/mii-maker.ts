@@ -19,7 +19,7 @@ export function GlassesTab(data: TabRenderInit) {
           items: ArrayNum(8).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            icon: `<img src="./assets/img/glasses/${k}.png" width="84" height="84" />`,
+            icon: data.icons.glasses[k],
             part: RenderPart.Head,
           })),
         },

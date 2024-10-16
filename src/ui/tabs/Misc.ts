@@ -71,10 +71,8 @@ export function MiscTab(data: TabRenderInit) {
                   },
                 },
                 {
-                  text: "No",
-                  callback() {
-                    data.editor.shutdown(false);
-                  },
+                  text: "Cancel",
+                  callback() {},
                 }
               );
           })

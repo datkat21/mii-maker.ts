@@ -19,7 +19,7 @@ export function FacialHairTab(data: TabRenderInit) {
           items: ArrayNum(6).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            icon: `<img src="./assets/img/mustache/${k}.png" width="84" height="84" />`,
+            icon: data.icons.mustache[k],
             part: RenderPart.Face,
           })),
         },
@@ -51,11 +51,11 @@ export function FacialHairTab(data: TabRenderInit) {
           ],
         },
         beardType: {
-          label: "Beard",
+          label: "Goatee",
           items: ArrayNum(6).map((k) => ({
             type: FeatureSetType.Icon,
             value: k,
-            icon: `<img src="./assets/img/beard/${k}.png" width="84" height="84" />`,
+            icon: data.icons.goatee[k],
             part: RenderPart.Head,
           })),
         },

@@ -7,6 +7,7 @@ import { MiiHairColorTable } from "../../constants/ColorTables";
 import type { TabRenderInit } from "../../constants/TabRenderType";
 import { ArrayNum } from "../../util/NumberArray";
 import { RenderPart } from "../../class/MiiEditor";
+import { MiiHairTable, rearrangeArray } from "../../constants/MiiFeatureTable";
 
 export function HairTab(data: TabRenderInit) {
   data.container.append(
@@ -16,12 +17,15 @@ export function HairTab(data: TabRenderInit) {
       entries: {
         hairType: {
           label: "Type",
-          items: ArrayNum(132).map((k) => ({
-            type: FeatureSetType.Icon,
-            value: k,
-            icon: `<img src="./assets/img/hair/${k}.png" width="84" height="84" />`,
-            part: RenderPart.Head,
-          })),
+          items: rearrangeArray(
+            ArrayNum(132).map((k) => ({
+              type: FeatureSetType.Icon,
+              value: k,
+              icon: data.icons.hair[k], // `<img src="./assets/img/hair/${k}.png" width="84" height="84" />`,
+              part: RenderPart.Head,
+            })),
+            MiiHairTable
+          ),
         },
         hairColor: {
           label: "Color",

@@ -15,6 +15,10 @@ import { MouthTab } from "../ui/tabs/Mouth";
 import { HairTab } from "../ui/tabs/Hair";
 import {
   MiiEyeColorTable,
+  MiiFavoriteColorIconTable,
+  MiiFavoriteColorLookupTable,
+  MiiGlassesColorIconTable,
+  MiiHairColorTable,
   MiiMouthColorLipTable,
   MiiMouthColorTable,
 } from "../constants/ColorTables";
@@ -45,8 +49,9 @@ export type IconSet = {
   eyes: string[];
   nose: string[];
   mouth: string[];
-  facialHair: string[];
-  mole: string[];
+  mustache: string[];
+  goatee: string[];
+  hair: string[];
   glasses: string[];
 };
 
@@ -207,6 +212,21 @@ export class MiiEditor {
       "--icon-lip-color-top": MiiMouthColorLipTable[this.mii.mouthColor].top,
       "--icon-lip-color-bottom":
         MiiMouthColorLipTable[this.mii.mouthColor].bottom,
+      "--icon-hair-tie":
+        "#" +
+        MiiFavoriteColorLookupTable[this.mii.favoriteColor]
+          .toString(16)
+          .padStart(6, "0"),
+      "--icon-eyebrow-fill": MiiHairColorTable[this.mii.eyebrowColor],
+      "--icon-hair-fill": MiiHairColorTable[this.mii.hairColor],
+      "--icon-facial-hair-fill": MiiHairColorTable[this.mii.facialHairColor],
+      "--icon-hat-fill": MiiFavoriteColorIconTable[this.mii.favoriteColor].top,
+      "--icon-hat-stroke":
+        MiiFavoriteColorIconTable[this.mii.favoriteColor].bottom,
+      "--icon-glasses-fill":
+        MiiGlassesColorIconTable[this.mii.glassesColor].top,
+      "--icon-glasses-shade":
+        MiiGlassesColorIconTable[this.mii.glassesColor].bottom,
     });
   }
   #setupTabs() {
@@ -301,7 +321,9 @@ export class MiiEditor {
           .qs("img")
           ?.style({ display: "block" })
           .attr({
-            src: `${Config.renderer.renderHeadshotURL}&data=${encodeURIComponent(
+            src: `${
+              Config.renderer.renderHeadshotURL
+            }&data=${encodeURIComponent(
               Buffer.from(this.mii.encode()).toString("base64")
             )}`,
           });

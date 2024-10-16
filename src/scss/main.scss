@@ -28,7 +28,14 @@ body {
   --icon-face-wrinkles: #996d54;
   --icon-head-fill: #ffffff;
   --icon-head-stroke: #999999;
+  --icon-hair-fill: currentColor;
+  --icon-eyebrow-fill: currentColor;
+  --icon-facial-hair-fill: currentColor;
   --icon-mouth-tooth: #ffffff;
+  --icon-glasses-fill: #000000;
+  --icon-glasses-shade: #606060;
+  --icon-lip-color-top: #712a04;
+  --icon-lip-color-bottom: #be4e26;
 
   @media (prefers-color-scheme: dark) {
     color: white;
@@ -52,9 +59,14 @@ body {
     --icon-face-detail: #ffffff;
     --icon-face-makeup: #ffbaba;
     --icon-face-wrinkles: #996d54;
-    --icon-head-fill: #000000;
-    --icon-head-stroke: #999999;
+    --icon-head-fill: #333333;
+    --icon-head-stroke: #474747;
+    --icon-hair-fill: currentColor;
+    --icon-eyebrow-fill: currentColor;
+    --icon-facial-hair-fill: currentColor;
     --icon-mouth-tooth: #000000;
+    --icon-glasses-fill: #ffffff;
+    --icon-glasses-shade: #606060;
     --icon-lip-color-top: #712a04;
     --icon-lip-color-bottom: #be4e26;
   }

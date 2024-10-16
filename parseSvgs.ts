@@ -13,8 +13,9 @@ let categories = [
   "eyes",
   "nose",
   "mouth",
-  "facialHair",
-  "mole",
+  "mustache",
+  "goatee",
+  "hair",
   "glasses",
 ];
 
@@ -27,12 +28,33 @@ function parseSvg(svg: string): string {
       /fill="white" stroke="#6F6F6F"/g,
       'fill="var(--icon-face-fill)" stroke="var(--icon-face-stroke)"'
     )
+    // Hair icons
+    .replace(
+      /fill="white" stroke="#BFBFBF"/g,
+      'fill="var(--icon-head-fill)" stroke="var(--icon-head-stroke)"'
+    )
+    .replace(/fill="#5F5F5F"\/>/g, 'fill="var(--icon-hair-fill)"/>')
+    .replace(/fill="#1E1E1E"/g, 'fill="var(--icon-facial-hair-fill)"')
+    .replace(/fill="#BFBFBF"/g, 'fill="var(--icon-hair-tie)"')
+    // Glasses
+    .replace(
+      /fill="white" stroke="#BFBEBD"/g,
+      'fill="var(--icon-head-fill)" stroke="var(--icon-head-stroke)"'
+    )
+    .replace(/stroke="#7B0000"/g, 'stroke="var(--icon-glasses-fill)"')
+    .replace(/fill="#7B0000"/g, 'fill="var(--icon-glasses-fill)"')
+    .replace(/fill="#030303"/g, 'fill="currentColor"')
+    .replace(/stroke="#030303"/g, 'stroke="currentColor"')
+    .replace(/fill="#F60000"/g, 'fill="var(--icon-glasses-shade)"')
     .replace(
       /fill="white" stroke="#999999"/g,
       'fill="var(--icon-head-fill)" stroke="var(--icon-head-stroke)"'
     )
+    .replace(/fill="#808080"/g, 'fill="var(--icon-hat-fill)"')
+    .replace(/fill="#404040"/g, 'fill="var(--icon-hat-stroke)"')
     .replace(/fill="#8D8D8D"/g, 'fill="var(--icon-face-detail)"')
     .replace(/#996D54/g, "var(--icon-face-wrinkles)")
+    .replace(/#E30000/g, "var(--icon-eyebrow-fill)")
     .replace(/#FF5F5F/g, "currentColor")
     .replace(/#0055FF/g, "var(--icon-mouth-tooth)")
     .replace(/#712A04/g, "var(--icon-lip-color-top)")
