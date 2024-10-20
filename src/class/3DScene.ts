@@ -18,11 +18,7 @@ import {
   cRimPower,
   MiiFavoriteFFLColorLookupTable,
 } from "./3d/shader/fflShaderConst";
-import {
-  FFLBodyShaderMaterial,
-  fflFragmentShader,
-  fflVertexShader,
-} from "./3d/shader/FFLShader";
+import { fflFragmentShader, fflVertexShader } from "./3d/shader/FFLShader";
 import { RenderPart } from "./MiiEditor";
 import { Config } from "../config";
 import { Buffer } from "../../node_modules/buffer";
@@ -252,9 +248,7 @@ export class Mii3DScene {
 
       // this fixes body rotation when pose is broken due to shader bug!!!
       // change the position back when it works
-
-      // glb.scene.rotation.set(0, 0, 0);
-      glb.scene.rotation.set(Math.PI, 0, 0);
+      glb.scene.rotation.set(0, 0, 0);
     };
 
     const loaders = [
@@ -472,8 +466,8 @@ export class Mii3DScene {
         );
 
         GLB.scene.name = "MiiHead";
-        // GLB.scene.rotation.set(-Math.PI / 2, 0, 0);
-        GLB.scene.rotation.set(Math.PI / 2, 0, 0);
+        GLB.scene.rotation.set(-Math.PI / 2, 0, 0);
+        // GLB.scene.rotation.set(Math.PI / 2, 0, 0);
         GLB.scene.scale.set(0.12, 0.12, 0.12);
 
         // enable shader on head

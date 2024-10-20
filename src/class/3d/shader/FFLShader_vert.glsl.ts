@@ -1,4 +1,4 @@
-// https://jsfiddle.net/arian_/8gvynrdu/6/
+export default /*glsl*/ `// https://jsfiddle.net/arian_/8gvynrdu/6/
 // position, texCoord (uv), normal are all provided by three.js
 
 // 頂点シェーダーに入力される attribute 変数
@@ -25,16 +25,49 @@ varying   vec2 v_texCoord;       //!< 出力: テクスチャー座標
 //uniform mat4 modelViewMatrix;  //!< ユニフォーム: プロジェクション行列
 //uniform mat4 projectionMatrix; //!< ユニフォーム: モデル行列
 
+#ifdef USE_SKINNING
+    uniform mat4 bindMatrix;
+    uniform mat4 bindMatrixInverse;
+    uniform highp sampler2D boneTexture;
+    mat4 getBoneMatrix( const in float i ) {
+        int size = textureSize( boneTexture, 0 ).x;
+        int j = int( i ) * 4;
+        int x = j % size;
+        int y = j / size;
+        vec4 v1 = texelFetch( boneTexture, ivec2( x, y ), 0 );
+        vec4 v2 = texelFetch( boneTexture, ivec2( x + 1, y ), 0 );
+        vec4 v3 = texelFetch( boneTexture, ivec2( x + 2, y ), 0 );
+        vec4 v4 = texelFetch( boneTexture, ivec2( x + 3, y ), 0 );
+        return mat4( v1, v2, v3, v4 );
+    }
+#endif
 void main()
 {
 //#ifdef FFL_COORDINATE_MODE_NORMAL
     // 頂点座標を変換
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    v_position = modelViewMatrix * vec4(position, 1.0);
-
+    // begin_vertex.glsl.js
+    vec3 transformed = vec3( position );
+#ifdef USE_SKINNING
+    // skinbase_vertex.glsl.js
+    mat4 boneMatX = getBoneMatrix( skinIndex.x );
+    mat4 boneMatY = getBoneMatrix( skinIndex.y );
+    mat4 boneMatZ = getBoneMatrix( skinIndex.z );
+    mat4 boneMatW = getBoneMatrix( skinIndex.w );
+    // skinning_vertex.glsl.js
+    vec4 skinVertex = bindMatrix * vec4( transformed, 1.0 );
+    vec4 skinned = vec4( 0.0 );
+    skinned += boneMatX * skinVertex * skinWeight.x;
+    skinned += boneMatY * skinVertex * skinWeight.y;
+    skinned += boneMatZ * skinVertex * skinWeight.z;
+    skinned += boneMatW * skinVertex * skinWeight.w;
+    transformed = ( bindMatrixInverse * skinned ).xyz;
+#endif
+    gl_Position =  projectionMatrix * modelViewMatrix * vec4(transformed, 1.0);// * vec4(position, 1.0);
+    v_position =  modelViewMatrix * vec4(transformed, 1.0);
     // 法線も変換
     //v_normal = mat3(inverse(u_mv)) * a_normal;
     v_normal = normalize(normalMatrix * normal);
+
 //#elif defined(FFL_COORDINATE_MODE_NONE)
 //    // 頂点座標を変換
 //    gl_Position = vec4(a_position.x, a_position.y * -1.0, a_position.z, a_position.w);
@@ -43,8 +76,8 @@ void main()
 //    v_normal = a_normal;
 //#endif
 
-     // その他の情報も書き出す
+    // その他の情報も書き出す
     v_texCoord = uv;
     v_tangent = normalize(normalMatrix * tangent.xyz);
     v_color = _color;
-}
+}`;
