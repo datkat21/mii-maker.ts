@@ -1,17 +1,25 @@
 import JSZip from "jszip";
 
-export const getAssets = () => assets;
+export const getMeshes = () => meshes;
+export const getTextures = () => textures;
 
-let assets: Record<string, any>;
+let meshes: any[];
+let textures: any[];
 
-export const setupAssets = async () => {
-  if (assets !== undefined) return console.log("[jfl] assets already set up");
+export const setupAssets = async (
+  assetPath: string = "./JFLAssets/JFLAssets.zip"
+) => {
+  if (meshes !== undefined)
+    return console.log("[jfl] mesh assets already set up");
+  if (textures !== undefined)
+    return console.log("[jfl] texture assets already set up");
 
-  const data = await fetch("./JFLAssets/JFLAssets.zip").then((j) => j.blob());
+  const data = await fetch(assetPath).then((j) => j.blob());
   const zip = await JSZip.loadAsync(data);
 
-  const meshDir = zip.folder("mesh")!;
-  const texDir = zip.folder("tex")!;
+  const files = Object.keys(zip.files).filter((f) => !f.endsWith("/"));
+  const meshEntries = files.filter((f) => f.includes("mesh/"));
+  const texEntries = files.filter((f) => f.includes("tex/"));
 
   const loadFile = (
     name: string,
@@ -26,32 +34,40 @@ export const setupAssets = async () => {
     });
 
   let promises: Promise<any>[] = [];
-  for (const mesh of Object.keys(meshDir.files)) {
-    const meshData = meshDir.files[mesh];
-    promises.push(
-      new Promise((resolve, reject) => {
-        meshData
-          .async("blob")
-          .then((b) =>
-            resolve({ type: "mesh", name: mesh, data: b, success: true })
-          )
-          .catch((e) =>
-            reject({ type: "mesh", name: mesh, data: e, success: false })
-          );
-      })
-    );
+  // load meshes and textures
+  for (let mesh of meshEntries) {
+    if (mesh === "mesh/") continue;
+    const meshData = zip.file(mesh)!;
+    mesh = mesh.replace("mesh/", "");
+    promises.push(loadFile(mesh, "mesh", meshData));
+  }
+  for (let tex of texEntries) {
+    if (tex === "tex/") continue;
+    const texData = zip.file(tex)!;
+    tex = tex.replace("tex/", "");
+    promises.push(loadFile(tex, "tex", texData));
   }
   const resolves = await Promise.all(promises);
 
-  //   for (const file of fileList) {
-  //     // console.log(file, zip.files[file]);
-  //     promises.push(zip.files[file].async("arraybuffer"));
-  //   }
-  //   for (let i = 0; i < fileList.length; i++) {
-  //     const fileName = fileList[i].split(".");
-  //     fileName.pop();
-  //     await sm.loadSoundBuffer(resolves[i], fileName.join("."));
-  //   }
+  const meshList: any[] = [];
+  resolves
+    .filter((r) => r.type === "mesh")
+    .forEach((mesh) => {
+      meshList[parseInt(mesh.name.slice(6, -4))] = mesh;
+    });
+  const texList: any[] = [];
+  resolves
+    .filter((r) => r.type === "tex")
+    .forEach((tex) => {
+      texList[parseInt(tex.name.slice(4, -4))] = tex;
+    });
+  // .sort(
+  //   (a, b) => parseInt(a.name.slice(6, -4)) - parseInt(b.name.slice(6, -4))
+  // );
 
-  console.log("[jfl] assets are being set up");
+  console.log("meshes:", meshList);
+  console.log("textures:", texList);
+
+  meshes = meshList;
+  textures = texList;
 };
