@@ -4,7 +4,6 @@ import { getSoundManager, initSoundManager } from "../class/audio/SoundManager";
 import Modal from "./components/Modal";
 import { Library } from "./pages/Library";
 import Mii from "../external/mii-js/mii";
-import { MiiEditor } from "../class/MiiEditor";
 
 export async function setupUi() {
   let mm = new MusicManager();
@@ -33,21 +32,9 @@ export async function setupUi() {
     }
   });
 
+  Library();
+
   await initSoundManager();
-
-  if (location.search !== "") {
-    const searchParams = new URLSearchParams(location.search);
-
-    if (searchParams.has("data")) {
-      new MiiEditor(
-        0,
-        () => {
-          Library();
-        },
-        searchParams.get("data")!
-      );
-    }
-  } else Library();
 
   getSoundManager().setVolume(0.35);
   mm.setVolume(0.35);

@@ -11,7 +11,7 @@ import {
   MiiPagedFeatureSet,
 } from "../components/MiiPagedFeatureSet";
 import EditorIcons from "../../constants/EditorIcons";
-import { getMii, RenderPart } from "../../class/MiiEditor";
+import { RenderPart } from "../../class/MiiEditor";
 
 export function MiscTab(data: TabRenderInit) {
   let tmpMii = new Mii(data.mii.encode());
@@ -39,9 +39,6 @@ export function MiscTab(data: TabRenderInit) {
                 {
                   text: "Save & Exit",
                   callback() {
-                    // If the Mii is special and we try to save, there's an error that we need to disable sharing
-                    if (getMii().normalMii === false)
-                      getMii().disableSharing = true;
                     data.editor.shutdown();
                   },
                 },
@@ -100,14 +97,12 @@ export function MiscTab(data: TabRenderInit) {
           (creator) => Buf.from(creator, "utf16le").length <= 0x14,
           data.editor
         ),
+        // cheap hack to get a special featureset item with a label
         new Html("div")
           .class("input-group")
-          .style({
-            height: "max-content",
-            margin: "0 -16px 0 -16px",
-            width: "calc(100% + 32px)",
-          })
+          .style({ height: "39px" })
           .appendMany(
+            new Html("label").text("Gender"),
             MiiPagedFeatureSet({
               mii: data.mii,
               onChange: data.callback,
@@ -126,36 +121,14 @@ export function MiscTab(data: TabRenderInit) {
                     },
                   ],
                 },
-                favorite: {
-                  label: "Favorite",
-                  items: [
-                    {
-                      type: FeatureSetType.Switch,
-                      iconOff: "No",
-                      iconOn: "Yes",
-                      property: "favorite",
-                      isNumber: false,
-                      forceRender: false,
-                      part: RenderPart.Face,
-                    },
-                  ],
-                },
-                isSpecial: {
-                  label: "Type",
-                  items: [
-                    {
-                      type: FeatureSetType.Switch,
-                      iconOff: "Special",
-                      iconOn: "Normal",
-                      property: "normalMii",
-                      isNumber: false,
-                      forceRender: false,
-                      part: RenderPart.Face,
-                    },
-                  ],
-                },
               },
-            }).style({ width: "100%" })
+            })
+              .classOn("no-pad")
+              .style({
+                display: "inline-flex",
+                width: "max-content",
+                height: "max-content",
+              })
           )
       )
   );
