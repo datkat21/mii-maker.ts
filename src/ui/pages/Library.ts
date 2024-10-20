@@ -34,7 +34,7 @@ export async function Library(highlightMiiId?: string) {
 
   const sidebar = new Html("div").class("library-sidebar").appendTo(container);
 
-  sidebar.append(new Html("h1").text("Mii Maker"));
+  sidebar.append(new Html("h1").text("Mii Creator"));
 
   const libraryList = new Html("div").class("library-list").appendTo(container);
 
