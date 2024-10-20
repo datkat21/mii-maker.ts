@@ -134,7 +134,7 @@ export function MiscTab(data: TabRenderInit) {
                       iconOff: "No",
                       iconOn: "Yes",
                       property: "favorite",
-                      isNumber: true,
+                      isNumber: false,
                       forceRender: false,
                       part: RenderPart.Face,
                     },
