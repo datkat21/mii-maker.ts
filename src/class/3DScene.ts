@@ -145,11 +145,11 @@ export class Mii3DScene {
     this.#renderer.setSize(this.#parent.offsetWidth, this.#parent.offsetHeight);
   }
   currentPosition!: CameraPosition;
-  focusCamera(part: CameraPosition) {
+  focusCamera(part: CameraPosition, force: boolean = false) {
     this.#controls.smoothTime = 0.2;
 
     // don't re-position the camera if it is already in the correct location
-    if (this.currentPosition === part) return;
+    if (this.currentPosition === part && force === false) return;
 
     this.currentPosition = part;
 
@@ -164,6 +164,7 @@ export class Mii3DScene {
     }
   }
   playEndingAnimation() {
+    this.focusCamera(CameraPosition.MiiFullBody, true);
     let heads = this.#scene.getObjectsByProperty("name", "MiiHead");
     for (const head of heads) {
       this.#traverseAddFaceMaterial(
@@ -492,11 +493,9 @@ export class Mii3DScene {
         // enable shader on head
         this.#scene.remove(...head);
         // hack to force remove head anyways
-        this.#scene
-          .getObjectsByProperty("name", "MiiHead")
-          .forEach((obj) => {
-            obj.parent!.remove(obj);
-          });
+        this.#scene.getObjectsByProperty("name", "MiiHead").forEach((obj) => {
+          obj.parent!.remove(obj);
+        });
         this.#traverseFFLShaderTest(GLB.scene);
         this.#scene.add(GLB.scene);
         break;
