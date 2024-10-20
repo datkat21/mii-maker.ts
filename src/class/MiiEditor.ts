@@ -60,6 +60,9 @@ export enum RenderPart {
   Face,
 }
 
+let activeMii: Mii;
+export const getMii = () => activeMii;
+
 export class MiiEditor {
   mii: Mii;
   icons!: IconSet;
@@ -115,6 +118,7 @@ export class MiiEditor {
     this.renderingMode = RenderMode.ThreeJs;
 
     this.mii = new Mii(Buffer.from(initString, "base64") as unknown as Buffer);
+    activeMii = this.mii;
 
     // Ensure that birthPlatform doesn't cause issues.
     if (this.mii.deviceOrigin === 0) this.mii.deviceOrigin = 4;
@@ -237,6 +241,7 @@ export class MiiEditor {
           container: content,
           callback: (mii, forceRender, renderPart) => {
             this.mii = mii;
+            activeMii = mii;
             // use of forceRender forces reload of the head in 3D mode
             this.render(forceRender, renderPart);
             this.#updateCssVars();

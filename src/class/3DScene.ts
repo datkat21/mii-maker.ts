@@ -10,8 +10,13 @@ import {
   cLightSpecular,
   cMaterialName,
   cMaterialParam,
+  cPantsColorBlue,
+  cPantsColorGold,
+  cPantsColorGray,
+  cPantsColorRed,
   cRimColor,
   cRimPower,
+  MiiFavoriteFFLColorLookupTable,
 } from "./3d/shader/fflShaderConst";
 import {
   FFLBodyShaderMaterial,
@@ -53,7 +58,7 @@ export class Mii3DScene {
       1000
     );
     this.#camera.position.set(0, 0, 25);
-    this.#camera.rotation.set(0, Math.PI, 0);
+    // this.#camera.rotation.set(0, Math.PI, 0);
     this.ready = false;
     this.headReady = false;
 
@@ -133,18 +138,6 @@ export class Mii3DScene {
 
       this.#renderer.render(this.#scene, this.#camera);
       this.animators.forEach((f) => f(time, delta));
-      // const timeChange = time % 4;
-
-      // TODO: nice background :D
-      // this.#scene.backgroundRotation.set(
-      //   0,
-      //   (time / 1000) * 0.01 * Math.PI,
-      //   (time / 1000) * 0.01 * Math.PI
-      // );
-
-      // if (this.mixer) {
-      //   this.mixer.update(time * 1000);
-      // }
     };
 
     this.#renderer.setClearAlpha(0);
@@ -211,13 +204,13 @@ export class Mii3DScene {
       console.log(glb);
 
       const clips = glb.animations;
-      const floatClip = clips.find((c) => c.name === "Float")!;
-      console.log("clip:", floatClip);
+      const idleClip = clips.find((c) => c.name === "Stand")!;
+      console.log("clip:", idleClip);
 
       this.#playAnimation(
         glb.scene.getObjectByName(type)!,
         path + type,
-        floatClip
+        idleClip
       );
 
       glb.scene.name = `${type}-body-root`;
@@ -227,15 +220,41 @@ export class Mii3DScene {
       });
 
       // Add materials to body and legs
-      (glb.scene.getObjectByName(`body_${type}`)! as THREE.Mesh).material =
-        new THREE.MeshStandardMaterial({ color: 0xffffff });
-      (glb.scene.getObjectByName(`legs_${type}`)! as THREE.Mesh).material =
-        new THREE.MeshStandardMaterial({ color: 0x666666 });
+      const gBodyMesh = glb.scene.getObjectByName(
+        `body_${type}`
+      )! as THREE.Mesh;
+      gBodyMesh.geometry.userData = {
+        cullMode: 1,
+        modulateColor: MiiFavoriteFFLColorLookupTable[this.mii.favoriteColor],
+        modulateMode: 0,
+        modulateType: cMaterialName.FFL_MODULATE_TYPE_SHAPE_BODY,
+      };
+      // adds shader material
+      this.#traverseMesh(gBodyMesh);
+
+      const gLegsMesh = glb.scene.getObjectByName(
+        `legs_${type}`
+      )! as THREE.Mesh;
+      gLegsMesh.geometry.userData = {
+        cullMode: 1,
+        modulateColor: cPantsColorGray,
+        modulateMode: 0,
+        modulateType: cMaterialName.FFL_MODULATE_TYPE_SHAPE_PANTS,
+        modulateSkinning: 1,
+      };
+      // adds shader material
+      this.#traverseMesh(gLegsMesh);
 
       if (this.#scene.getObjectByName("m"))
         this.#scene.getObjectByName("m")!.visible = false;
       if (this.#scene.getObjectByName("f"))
         this.#scene.getObjectByName("f")!.visible = false;
+
+      // this fixes body rotation when pose is broken due to shader bug!!!
+      // change the position back when it works
+
+      // glb.scene.rotation.set(0, 0, 0);
+      glb.scene.rotation.set(Math.PI, 0, 0);
     };
 
     const loaders = [
@@ -248,30 +267,22 @@ export class Mii3DScene {
 
     console.log("READY");
   }
-  // getPantsColor() {
-  //   if (this.mii.normalMii === false) {
-  //     return 0xffff66;
-  //   }
-  //   if (this.mii.favorite) {
-  //     return 0xff6666;
-  //   }
-  //   return 0x666666;
-  // }
+  getPantsColor() {
+    if (this.mii.normalMii === false) {
+      return cPantsColorGold;
+    }
+    if (this.mii.favorite) {
+      return cPantsColorRed;
+    }
+    return cPantsColorGray;
+  }
   async updateBody() {
     if (!this.ready) return;
-
-    // console.log("updateBody");
 
     const bodyM = this.#scene.getObjectByName("m-body-root");
     const bodyF = this.#scene.getObjectByName("f-body-root");
     if (!bodyM) return;
     if (!bodyF) return;
-
-    // console.log("h", this.mii.height, "w", this.mii.build);
-
-    // // Arbitrary guesses at calculations..
-    // const height = (this.mii.height / 127) * 1.5 + 0.25;
-    // const build = (this.mii.build / 127) * 1.5 + 0.4; // * (height * 0.5);
 
     const build = this.mii.build;
     const height = this.mii.height;
@@ -297,40 +308,130 @@ export class Mii3DScene {
       case 0:
         bodyM.getObjectByName("m")!.visible = true;
         bodyF.getObjectByName("f")!.visible = false;
-        bodyM
-          .getObjectByName("m")!
-          .scale.set(scaleFactors.x, scaleFactors.y, scaleFactors.z);
+
+        // Attach head to head bone of body
+        (bodyM.getObjectByName("head") as THREE.Bone).add(
+          this.#scene.getObjectByName("MiiHead")!
+        );
+
+        // Scale each bone except for body
+        bodyM.traverse((o: THREE.Object3D) => {
+          if ((o as THREE.Bone).isBone) {
+            const bone = o as THREE.Bone;
+            if (bone.name === "head") return;
+            bone.scale.set(scaleFactors.x, scaleFactors.y, scaleFactors.z);
+          }
+        });
+
+        // ONLY KEEP BELOW IF USING SHADER MATERIAL, it will error if material is changed
         const mBody = bodyM
           .getObjectByName("m")!
           .getObjectByName("body_m")! as THREE.Mesh;
-        (mBody.material as THREE.MeshStandardMaterial).color.set(
-          MiiFavoriteColorLookupTable[this.mii.favoriteColor]
-        );
-        // const mLegs = bodyM
-        //   .getObjectByName("m")!
-        //   .getObjectByName("legs_m")! as THREE.Mesh;
-        // (mLegs.material as THREE.MeshStandardMaterial).color.set(
-        //   this.getPantsColor()
-        // );
+        (mBody.material as THREE.ShaderMaterial).uniforms.u_const1.value =
+          new THREE.Vector4(
+            ...MiiFavoriteFFLColorLookupTable[this.mii.favoriteColor]
+          );
+        const mLegs = bodyM
+          .getObjectByName("m")!
+          .getObjectByName("legs_m")! as THREE.Mesh;
+        (mLegs.material as THREE.ShaderMaterial).uniforms.u_const1.value =
+          new THREE.Vector4(...this.getPantsColor());
         break;
       // f
       case 1:
         bodyM.getObjectByName("m")!.visible = false;
         bodyF.getObjectByName("f")!.visible = true;
-        bodyF
-          .getObjectByName("f")!
-          .scale.set(scaleFactors.x, scaleFactors.y, scaleFactors.z);
+
+        // Attach head to head bone of body
+        (bodyF.getObjectByName("head") as THREE.Bone).add(
+          this.#scene.getObjectByName("MiiHead")!
+        );
+
+        // Scale each bone except for body
+        bodyF.traverse((o: THREE.Object3D) => {
+          if ((o as THREE.Bone).isBone) {
+            // attempt at porting some bone scaling code.. disabled for now
+            const bone = o as THREE.Bone;
+            if (bone.name === "head") return;
+            let boneScale = { x: 1, y: 1, z: 1 };
+            switch (bone.name) {
+              default:
+                break;
+              // case "chest":
+              // case "chest_2":
+              // case "hip":
+              // case "foot_l1":
+              // case "foot_l2":
+              // case "foot_r1":
+              // case "foot_r2":
+              //   boneScale.x = scaleFactors.x;
+              //   boneScale.y = scaleFactors.y;
+              //   boneScale.z = scaleFactors.z;
+              //   break;
+
+              // case "arm_l1":
+              // case "arm_l2":
+              // case "elbow_l":
+              // case "arm_r1":
+              // case "arm_r2":
+              // case "elbow_r":
+              //   boneScale.x = scaleFactors.y;
+              //   boneScale.y = scaleFactors.x;
+              //   boneScale.z = scaleFactors.z;
+              //   break;
+
+              // case "wrist_l":
+              // case "shoulder_l":
+              // case "wrist_r":
+              // case "shoulder_r":
+              // case "ankle_l":
+              // case "knee_l":
+              // case "ankle_r":
+              // case "knee_r":
+              //   boneScale.x = scaleFactors.x;
+              //   boneScale.y = scaleFactors.x;
+              //   boneScale.z = scaleFactors.x;
+              //   break;
+
+              // case "head":
+              //   boneScale.x = scaleFactors.x;
+              //   boneScale.y = Math.min(scaleFactors.y, 1.0);
+              //   boneScale.z = scaleFactors.z;
+              //   break;
+            }
+            bone.scale.set(boneScale.x, boneScale.y, boneScale.z);
+          }
+        });
+
+        // KEEP BELOW IF USING SHADER MATERIAL, comment this section and uncomment the one below it to enable the one without shader material
         const fBody = bodyF
           .getObjectByName("f")!
           .getObjectByName("body_f")! as THREE.Mesh;
-        (fBody.material as THREE.MeshStandardMaterial).color.set(
-          MiiFavoriteColorLookupTable[this.mii.favoriteColor]
-        );
+        (fBody.material as THREE.ShaderMaterial).uniforms.u_const1.value =
+          new THREE.Vector4(
+            ...MiiFavoriteFFLColorLookupTable[this.mii.favoriteColor]
+          );
+        const fLegs = bodyF
+          .getObjectByName("f")!
+          .getObjectByName("legs_f")! as THREE.Mesh;
+        (fLegs.material as THREE.ShaderMaterial).uniforms.u_const1.value =
+          new THREE.Vector4(...this.getPantsColor());
+
+        // const fBody = bodyF
+        //   .getObjectByName("f")!
+        //   .getObjectByName("body_f")! as THREE.Mesh;
+        // (fBody.material as THREE.MeshBasicMaterial).color.set(
+        //   MiiFavoriteFFLColorLookupTable[this.mii.favoriteColor][0],
+        //   MiiFavoriteFFLColorLookupTable[this.mii.favoriteColor][1],
+        //   MiiFavoriteFFLColorLookupTable[this.mii.favoriteColor][2]
+        // );
         // const fLegs = bodyF
         //   .getObjectByName("f")!
         //   .getObjectByName("legs_f")! as THREE.Mesh;
-        // (fLegs.material as THREE.MeshStandardMaterial).color.set(
-        //   this.getPantsColor()
+        // (fLegs.material as THREE.MeshBasicMaterial).color.set(
+        //   this.getPantsColor()[0],
+        //   this.getPantsColor()[1],
+        //   this.getPantsColor()[2]
         // );
         break;
     }
@@ -371,18 +472,19 @@ export class Mii3DScene {
         );
 
         GLB.scene.name = "MiiHead";
+        // GLB.scene.rotation.set(-Math.PI / 2, 0, 0);
+        GLB.scene.rotation.set(Math.PI / 2, 0, 0);
         GLB.scene.scale.set(0.12, 0.12, 0.12);
 
-        // ffl shader is disabled for now
-        // due to face texture and lighting issues
+        // enable shader on head
         this.#traverseFFLShaderTest(GLB.scene);
         this.#scene.remove(...head);
         this.#scene.add(GLB.scene);
 
-        // use head bob animation from animations source
-        const clip = this.animations.get("HeadBob")!;
-        clip.tracks[0].name = "MiiHead.quaternion";
-        this.#playAnimation(GLB.scene, "MiiHeadBobClip", clip);
+        // head bob animation is disabled while we have head bone animation now
+        // const clip = this.animations.get("HeadBob")!;
+        // clip.tracks[0].name = "MiiHead.quaternion";
+        // this.#playAnimation(GLB.scene, "MiiHeadBobClip", clip);
         break;
       case RenderPart.Face:
         if (head.length > 0) {
@@ -469,6 +571,9 @@ export class Mii3DScene {
         `Mesh "${node.name}" is missing "modulateType" in userData.`
       );
 
+    let modulateSkinning = userData.modulateSkinning;
+    if (userData.modulateSkinning === undefined) modulateSkinning = 0;
+
     // HACK for now: disable lighting on mask, glass, noseline
     // (Because there is some lighting bug affecting
     // those that does not happen in FFL-Testing)
@@ -520,37 +625,76 @@ export class Mii3DScene {
       }
     }
 
+    let shaderMaterial: THREE.ShaderMaterial;
+    if (
+      modulateType === cMaterialName.FFL_MODULATE_TYPE_SHAPE_BODY ||
+      modulateType === cMaterialName.FFL_MODULATE_TYPE_SHAPE_PANTS
+    )
+      shaderMaterial = new THREE.ShaderMaterial({
+        vertexShader: fflVertexShader,
+        fragmentShader: fflFragmentShader,
+        uniforms: {
+          u_const1: { value: modulateColor },
+          u_light_ambient: { value: cLightAmbient },
+          u_light_diffuse: { value: cLightDiffuse },
+          u_light_specular: { value: cLightSpecular },
+          u_light_dir: { value: cLightDir },
+          u_light_enable: { value: true },
+          u_material_ambient: { value: materialParam.ambient },
+          u_material_diffuse: { value: materialParam.diffuse },
+          u_material_specular: { value: materialParam.specular },
+          u_material_specular_mode: { value: materialParam.specularMode },
+          u_material_specular_power: { value: materialParam.specularPower },
+          u_mode: { value: modulateMode },
+          u_rim_color: { value: new THREE.Vector4(0.4, 0.4, 0.4, 1.0) },
+          u_rim_power: { value: cRimPower },
+          s_texture: { value: originalMaterial.map },
+        },
+        defines: defines,
+        side: side,
+        // NOTE: usually these blend modes are
+        // only set for DrawXlu stage
+        blending: THREE.CustomBlending,
+        blendDstAlpha: THREE.OneFactor,
+        transparent: originalMaterial.transparent, // Handle transparency
+        alphaTest: originalMaterial.alphaTest, // Handle alpha testing
+      });
     // Create a custom ShaderMaterial
-    const shaderMaterial = new THREE.ShaderMaterial({
-      vertexShader: fflVertexShader,
-      fragmentShader: fflFragmentShader,
-      uniforms: {
-        u_const1: { value: modulateColor },
-        u_light_ambient: { value: cLightAmbient },
-        u_light_diffuse: { value: cLightDiffuse },
-        u_light_specular: { value: cLightSpecular },
-        u_light_dir: { value: cLightDir },
-        u_light_enable: { value: lightEnable },
-        u_material_ambient: { value: materialParam.ambient },
-        u_material_diffuse: { value: materialParam.diffuse },
-        u_material_specular: { value: materialParam.specular },
-        u_material_specular_mode: { value: materialParam.specularMode },
-        u_material_specular_power: { value: materialParam.specularPower },
-        u_mode: { value: modulateMode },
-        u_rim_color: { value: cRimColor },
-        u_rim_power: { value: cRimPower },
-        s_texture: { value: originalMaterial.map },
-      },
-      defines: defines,
-      side: side,
-      // NOTE: usually these blend modes are
-      // only set for DrawXlu stage
-      blending: THREE.CustomBlending,
-      blendDstAlpha: THREE.OneFactor,
-      transparent: originalMaterial.transparent, // Handle transparency
-      alphaTest: originalMaterial.alphaTest, // Handle alpha testing
-    });
+    else
+      shaderMaterial = new THREE.ShaderMaterial({
+        vertexShader: fflVertexShader,
+        fragmentShader: fflFragmentShader,
+        uniforms: {
+          u_const1: { value: modulateColor },
+          u_light_ambient: { value: cLightAmbient },
+          u_light_diffuse: { value: cLightDiffuse },
+          u_light_specular: { value: cLightSpecular },
+          u_light_dir: { value: cLightDir },
+          u_light_enable: { value: lightEnable },
+          u_material_ambient: { value: materialParam.ambient },
+          u_material_diffuse: { value: materialParam.diffuse },
+          u_material_specular: { value: materialParam.specular },
+          u_material_specular_mode: { value: materialParam.specularMode },
+          u_material_specular_power: { value: materialParam.specularPower },
+          u_mode: { value: modulateMode },
+          u_rim_color: { value: cRimColor },
+          u_rim_power: { value: cRimPower },
+          s_texture: { value: originalMaterial.map },
+        },
+        defines: defines,
+        side: side,
+        // NOTE: usually these blend modes are
+        // only set for DrawXlu stage
+        blending: THREE.CustomBlending,
+        blendDstAlpha: THREE.OneFactor,
+        transparent: originalMaterial.transparent, // Handle transparency
+        alphaTest: originalMaterial.alphaTest, // Handle alpha testing
+      });
+    if (modulateSkinning === 1) {
+      // (node.material as THREE.ShaderMaterial).skinning
+    }
 
+    console.log(node.material);
     // Assign the custom material to the mesh
     node.material = shaderMaterial;
   }

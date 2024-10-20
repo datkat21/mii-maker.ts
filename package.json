@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build-ts": "bun build.ts",
+    "build-jfl": "bun build-jfl.ts",
     "serve": "bunx serve"
   },
   "devDependencies": {
