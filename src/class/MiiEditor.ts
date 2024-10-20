@@ -352,7 +352,12 @@ export class MiiEditor {
         break;
     }
   }
-  shutdown(shouldSave: boolean = true) {
+  #disableUI() {
+    this.ui.mii.qs("button")!.classOn("disabled");
+    this.ui.tabList.classOn("disabled");
+    this.ui.tabContent.classOn("disabled");
+  }
+  async shutdown(shouldSave: boolean = true) {
     if (shouldSave) {
       if (Array.from(this.errors.values()).find((i) => i === true)) {
         let errorList = [];
@@ -365,6 +370,17 @@ export class MiiEditor {
             errorList.map((e) => `• ${e}`).join("\n")
         );
         return;
+      }
+
+      if (this.renderingMode === RenderMode.ThreeJs) {
+        await new Promise((resolve, reject) => {
+          this.#disableUI();
+          // Tell scene to change animation
+          this.ui.scene.playEndingAnimation();
+          setTimeout(() => {
+            resolve(null);
+          }, 1500);
+        });
       }
     }
 

@@ -284,6 +284,12 @@ button {
   }
 }
 
+.disabled {
+  transition: opacity 0.5s linear;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 input {
   display: block;
   font: inherit;

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import CameraControls from "camera-controls";
-import type Mii from "../external/mii-js/mii";
+import Mii from "../external/mii-js/mii";
 import { MiiFavoriteColorLookupTable } from "../constants/ColorTables";
 import {
   cLightAmbient,
@@ -22,6 +22,7 @@ import { fflFragmentShader, fflVertexShader } from "./3d/shader/FFLShader";
 import { RenderPart } from "./MiiEditor";
 import { Config } from "../config";
 import { Buffer } from "../../node_modules/buffer";
+import { getSoundManager } from "./audio/SoundManager";
 
 export enum CameraPosition {
   MiiHead,
@@ -162,6 +163,25 @@ export class Mii3DScene {
       this.#controls.dollyTo(15, true);
     }
   }
+  playEndingAnimation() {
+    let heads = this.#scene.getObjectsByProperty("name", "MiiHead");
+    for (const head of heads) {
+      this.#traverseAddFaceMaterial(
+        head as THREE.Mesh,
+        `&data=${encodeURIComponent(
+          Buffer.from(this.mii.encode()).toString("base64")
+        )}&expression=1`
+      );
+    }
+    const type = this.mii.gender == 0 ? "m" : "f";
+    this.animators.delete(`animation-${type}`);
+    this.#playAnimation(
+      this.#scene.getObjectByName(type)!,
+      `animation-${type}`,
+      this.animations.get(`${type}-body-wave`)!
+    );
+    getSoundManager().playSound("finish");
+  }
   resize() {
     this.#camera.aspect = this.#parent.offsetWidth / this.#parent.offsetHeight;
     this.#camera.updateProjectionMatrix();
@@ -201,11 +221,14 @@ export class Mii3DScene {
 
       const clips = glb.animations;
       const idleClip = clips.find((c) => c.name === "Stand")!;
+      const waveClip = clips.find((c) => c.name === "Wave")!;
+      this.animations.set(`${type}-body-stand`, idleClip);
+      this.animations.set(`${type}-body-wave`, waveClip);
       console.log("clip:", idleClip);
 
       this.#playAnimation(
         glb.scene.getObjectByName(type)!,
-        path + type,
+        `animation-${type}`,
         idleClip
       );
 
@@ -297,6 +320,61 @@ export class Mii3DScene {
     // Ensure scaleFactors.y is clamped to a maximum of 1.0
     scaleFactors.y = Math.min(scaleFactors.y, 1.0);
 
+    function traverseBones(object: THREE.Object3D) {
+      // object.scale.set(scaleFactors.x, scaleFactors.y, scaleFactors.z);
+      // object.traverse((o: THREE.Object3D) => {
+      //   if ((o as THREE.Bone).isBone) {
+      //     // attempt at porting some bone scaling code.. disabled for now
+      //     const bone = o as THREE.Bone;
+      //     if (bone.name === "head") return;
+      //     let boneScale = { x: 1, y: 1, z: 1 };
+      //     switch (bone.name) {
+      //       default:
+      //         break;
+      //       // case "chest":
+      //       // case "chest_2":
+      //       // case "hip":
+      //       // case "foot_l1":
+      //       // case "foot_l2":
+      //       // case "foot_r1":
+      //       // case "foot_r2":
+      //       //   boneScale.x = scaleFactors.x;
+      //       //   boneScale.y = scaleFactors.y;
+      //       //   boneScale.z = scaleFactors.z;
+      //       //   break;
+      //       // case "arm_l1":
+      //       // case "arm_l2":
+      //       // case "elbow_l":
+      //       // case "arm_r1":
+      //       // case "arm_r2":
+      //       // case "elbow_r":
+      //       //   boneScale.x = scaleFactors.y;
+      //       //   boneScale.y = scaleFactors.x;
+      //       //   boneScale.z = scaleFactors.z;
+      //       //   break;
+      //       // case "wrist_l":
+      //       // case "shoulder_l":
+      //       // case "wrist_r":
+      //       // case "shoulder_r":
+      //       // case "ankle_l":
+      //       // case "knee_l":
+      //       // case "ankle_r":
+      //       // case "knee_r":
+      //       //   boneScale.x = scaleFactors.x;
+      //       //   boneScale.y = scaleFactors.x;
+      //       //   boneScale.z = scaleFactors.x;
+      //       //   break;
+      //       // case "head":
+      //       //   boneScale.x = scaleFactors.x;
+      //       //   boneScale.y = Math.min(scaleFactors.y, 1.0);
+      //       //   boneScale.z = scaleFactors.z;
+      //       //   break;
+      //     }
+      //     bone.scale.set(boneScale.x, boneScale.y, boneScale.z);
+      //   }
+      // });
+    }
+
     switch (this.mii.gender) {
       // m
       case 0:
@@ -309,13 +387,7 @@ export class Mii3DScene {
         );
 
         // Scale each bone except for body
-        bodyM.traverse((o: THREE.Object3D) => {
-          if ((o as THREE.Bone).isBone) {
-            const bone = o as THREE.Bone;
-            if (bone.name === "head") return;
-            bone.scale.set(scaleFactors.x, scaleFactors.y, scaleFactors.z);
-          }
-        });
+        traverseBones(bodyM);
 
         // ONLY KEEP BELOW IF USING SHADER MATERIAL, it will error if material is changed
         const mBody = bodyM
@@ -342,60 +414,7 @@ export class Mii3DScene {
         );
 
         // Scale each bone except for body
-        bodyF.traverse((o: THREE.Object3D) => {
-          if ((o as THREE.Bone).isBone) {
-            // attempt at porting some bone scaling code.. disabled for now
-            const bone = o as THREE.Bone;
-            if (bone.name === "head") return;
-            let boneScale = { x: 1, y: 1, z: 1 };
-            switch (bone.name) {
-              default:
-                break;
-              // case "chest":
-              // case "chest_2":
-              // case "hip":
-              // case "foot_l1":
-              // case "foot_l2":
-              // case "foot_r1":
-              // case "foot_r2":
-              //   boneScale.x = scaleFactors.x;
-              //   boneScale.y = scaleFactors.y;
-              //   boneScale.z = scaleFactors.z;
-              //   break;
-
-              // case "arm_l1":
-              // case "arm_l2":
-              // case "elbow_l":
-              // case "arm_r1":
-              // case "arm_r2":
-              // case "elbow_r":
-              //   boneScale.x = scaleFactors.y;
-              //   boneScale.y = scaleFactors.x;
-              //   boneScale.z = scaleFactors.z;
-              //   break;
-
-              // case "wrist_l":
-              // case "shoulder_l":
-              // case "wrist_r":
-              // case "shoulder_r":
-              // case "ankle_l":
-              // case "knee_l":
-              // case "ankle_r":
-              // case "knee_r":
-              //   boneScale.x = scaleFactors.x;
-              //   boneScale.y = scaleFactors.x;
-              //   boneScale.z = scaleFactors.x;
-              //   break;
-
-              // case "head":
-              //   boneScale.x = scaleFactors.x;
-              //   boneScale.y = Math.min(scaleFactors.y, 1.0);
-              //   boneScale.z = scaleFactors.z;
-              //   break;
-            }
-            bone.scale.set(boneScale.x, boneScale.y, boneScale.z);
-          }
-        });
+        traverseBones(bodyF);
 
         // KEEP BELOW IF USING SHADER MATERIAL, comment this section and uncomment the one below it to enable the one without shader material
         const fBody = bodyF
@@ -471,69 +490,26 @@ export class Mii3DScene {
         GLB.scene.scale.set(0.12, 0.12, 0.12);
 
         // enable shader on head
-        this.#traverseFFLShaderTest(GLB.scene);
         this.#scene.remove(...head);
+        // hack to force remove head anyways
+        this.#scene
+          .getObjectsByProperty("name", "MiiHead")
+          .forEach((obj) => {
+            obj.parent!.remove(obj);
+          });
+        this.#traverseFFLShaderTest(GLB.scene);
         this.#scene.add(GLB.scene);
-
-        // head bob animation is disabled while we have head bone animation now
-        // const clip = this.animations.get("HeadBob")!;
-        // clip.tracks[0].name = "MiiHead.quaternion";
-        // this.#playAnimation(GLB.scene, "MiiHeadBobClip", clip);
         break;
       case RenderPart.Face:
         if (head.length > 0) {
           head.forEach((h) => {
-            // Dispose of old head materials
-            h.traverse((c) => {
-              let child = c as THREE.Mesh;
-              if (child.isMesh) {
-                if (child.geometry.userData) {
-                  const data = child.geometry.userData as {
-                    cullMode: number;
-                    modulateColor: number[];
-                    modulateMode: number;
-                    modulateType: number;
-                  };
-                  if (data.modulateMode) {
-                    if (data.modulateType === 6) {
-                      // found face!!
-                      (async () => {
-                        const mat = child.material as THREE.MeshBasicMaterial;
-                        const oldMat = mat;
-
-                        const tex = await this.#textureLoader.loadAsync(
-                          Config.renderer.renderFaceURL +
-                            "&data=" +
-                            encodeURIComponent(
-                              Buffer.from(this.mii.encode()).toString("base64")
-                            )
-                        );
-
-                        if (tex) {
-                          // Initialize the texture on the GPU to prevent lag frames
-                          tex.flipY = false;
-                          this.#renderer.initTexture(tex);
-
-                          child.material = new THREE.MeshStandardMaterial({
-                            map: tex,
-                            emissiveIntensity: 1,
-                            transparent: true,
-                            metalness: 1,
-                            toneMapped: true,
-                            alphaTest: 0.5,
-                          });
-
-                          // Now... Replace it with FFL shader material
-                          this.#traverseMesh(child);
-
-                          oldMat.dispose();
-                        }
-                      })();
-                    }
-                  }
-                }
-              }
-            });
+            this.#traverseAddFaceMaterial(
+              h as THREE.Mesh,
+              "&data=" +
+                encodeURIComponent(
+                  Buffer.from(this.mii.encode()).toString("base64")
+                )
+            );
           });
         }
         break;
@@ -691,6 +667,55 @@ export class Mii3DScene {
     console.log(node.material);
     // Assign the custom material to the mesh
     node.material = shaderMaterial;
+  }
+  #traverseAddFaceMaterial(node: THREE.Mesh, urlParams: string) {
+    // Dispose of old head materials
+    node.traverse((c) => {
+      let child = c as THREE.Mesh;
+      if (child.isMesh) {
+        if (child.geometry.userData) {
+          const data = child.geometry.userData as {
+            cullMode: number;
+            modulateColor: number[];
+            modulateMode: number;
+            modulateType: number;
+          };
+          if (data.modulateMode) {
+            if (data.modulateType === 6) {
+              // found face!!
+              (async () => {
+                const mat = child.material as THREE.MeshBasicMaterial;
+                const oldMat = mat;
+
+                const tex = await this.#textureLoader.loadAsync(
+                  Config.renderer.renderFaceURL + urlParams
+                );
+
+                if (tex) {
+                  // Initialize the texture on the GPU to prevent lag frames
+                  tex.flipY = false;
+                  this.#renderer.initTexture(tex);
+
+                  child.material = new THREE.MeshStandardMaterial({
+                    map: tex,
+                    emissiveIntensity: 1,
+                    transparent: true,
+                    metalness: 1,
+                    toneMapped: true,
+                    alphaTest: 0.5,
+                  });
+
+                  // Now... Replace it with FFL shader material
+                  this.#traverseMesh(child);
+
+                  oldMat.dispose();
+                }
+              })();
+            }
+          }
+        }
+      }
+    });
   }
 
   shutdown() {
