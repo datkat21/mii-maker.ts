@@ -64,9 +64,27 @@ void main()
 #endif
     gl_Position =  projectionMatrix * modelViewMatrix * vec4(transformed, 1.0);// * vec4(position, 1.0);
     v_position =  modelViewMatrix * vec4(transformed, 1.0);
-    // 法線も変換
+    // 法線も変換 <-- line 67
+    vec3 objectNormal = normal;
+    vec3 objectTangent = tangent.xyz;
+
+
+#ifdef USE_SKINNING
+    // skinnormal_vertex.glsl.js
+    mat4 skinMatrix = mat4( 0.0 );
+    skinMatrix += skinWeight.x * boneMatX;
+    skinMatrix += skinWeight.y * boneMatY;
+    skinMatrix += skinWeight.z * boneMatZ;
+    skinMatrix += skinWeight.w * boneMatW;
+    skinMatrix = bindMatrixInverse * skinMatrix * bindMatrix;
+
+    objectNormal = vec4( skinMatrix * vec4( objectNormal, 0.0 ) ).xyz;
+    objectTangent = vec4( skinMatrix * vec4( objectTangent, 0.0 ) ).xyz;
+
+#endif
+
     //v_normal = mat3(inverse(u_mv)) * a_normal;
-    v_normal = normalize(normalMatrix * normal);
+    v_normal = normalize(normalMatrix * objectNormal);
 
 //#elif defined(FFL_COORDINATE_MODE_NONE)
 //    // 頂点座標を変換
@@ -78,6 +96,6 @@ void main()
 
     // その他の情報も書き出す
     v_texCoord = uv;
-    v_tangent = normalize(normalMatrix * tangent.xyz);
+    v_tangent = normalize(normalMatrix * objectTangent);
     v_color = _color;
 }`;
