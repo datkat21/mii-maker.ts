@@ -5,7 +5,7 @@ import { Settings } from "./Settings";
 
 export function MainMenu() {
   Modal.modal(
-    "Mii Creator Web",
+    "Mii Maker Web",
     "What would you like to do?",
     "body",
     {
