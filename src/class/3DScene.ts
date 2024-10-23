@@ -546,7 +546,7 @@ export class Mii3DScene {
 
     this.headReady = true;
     this.fadeIn();
-    this.updateBody();
+    await this.updateBody();
   }
   #traverseFFLShaderTest(model: THREE.Group<THREE.Object3DEventMap>) {
     // Traverse the model to access its meshes

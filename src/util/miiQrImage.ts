@@ -51,19 +51,21 @@ export const getMiiRender = async (mii: Mii): Promise<HTMLImageElement> => {
       parent.elm,
       SetupType.Screenshot,
       (renderer) => {
-        setTimeout(() => {
-          const imgUrl = renderer.domElement.toDataURL("image/png", 100);
-          const image = new Image(
-            renderer.domElement.width,
-            renderer.domElement.height
-          );
-          image.src = imgUrl;
-          image.onload = () => {
-            resolve(image);
-            scene.shutdown();
-            parent.cleanup();
-          };
-        }, 100);
+        requestAnimationFrame(() => {
+          const imgUrl = renderer.domElement.toBlob((blob) => {
+            const image = new Image(
+              renderer.domElement.width,
+              renderer.domElement.height
+            );
+            image.src = URL.createObjectURL(blob!);
+            console.log("Temporary render URL:", image.src);
+            image.onload = () => {
+              resolve(image);
+              scene.shutdown();
+              parent.cleanup();
+            };
+          });
+        });
       }
     );
     scene.init().then(() => {
