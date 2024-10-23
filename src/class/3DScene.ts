@@ -28,6 +28,10 @@ export enum CameraPosition {
   MiiHead,
   MiiFullBody,
 }
+export enum SetupType {
+  Normal,
+  Screenshot,
+}
 
 export class Mii3DScene {
   #camera: THREE.PerspectiveCamera;
@@ -43,7 +47,14 @@ export class Mii3DScene {
   mixer!: THREE.AnimationMixer;
   animators: Map<string, (n: number, f: number) => any>;
   animations: Map<string, THREE.AnimationClip>;
-  constructor(mii: Mii, parent: HTMLElement) {
+  setupType: SetupType;
+  #initCallback?: (renderer: THREE.WebGLRenderer) => any;
+  constructor(
+    mii: Mii,
+    parent: HTMLElement,
+    setupType: SetupType = SetupType.Normal,
+    initCallback?: (renderer: THREE.WebGLRenderer) => any
+  ) {
     this.animations = new Map();
     this.animators = new Map();
     this.#parent = parent;
@@ -58,6 +69,7 @@ export class Mii3DScene {
     // this.#camera.rotation.set(0, Math.PI, 0);
     this.ready = false;
     this.headReady = false;
+    if (initCallback) this.#initCallback = initCallback;
 
     const cubeTextureLoader = new THREE.CubeTextureLoader();
     cubeTextureLoader
@@ -96,7 +108,16 @@ export class Mii3DScene {
     // ambientLight.visible = false;
     this.#scene.add(ambientLight);
 
-    this.#renderer = new THREE.WebGLRenderer({ antialias: true });
+    if (setupType === SetupType.Screenshot) {
+      this.#renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        preserveDrawingBuffer: true,
+      });
+    } else {
+      this.#renderer = new THREE.WebGLRenderer({ antialias: true });
+    }
+    this.setupType = setupType;
+
     this.#renderer.setSize(512, 512);
     // this.#renderer.setPixelRatio(window.devicePixelRatio * 0.1);
 
@@ -113,6 +134,12 @@ export class Mii3DScene {
     this.#controls.maxDistance = 35;
     this.#controls.minAzimuthAngle = -Math.PI;
     this.#controls.maxAzimuthAngle = Math.PI;
+
+    if (setupType === SetupType.Screenshot) {
+      this.#controls.moveTo(0, 1.5, 0);
+      this.#controls.dollyTo(40);
+      this.#camera.fov = 30;
+    }
 
     // this.#controls.maxTargetRadius = 10;
     // this.#controls.enableDamping = true;
@@ -195,6 +222,9 @@ export class Mii3DScene {
     await this.#addBody();
     await this.updateMiiHead();
     this.ready = true;
+    if (this.setupType === SetupType.Screenshot) {
+      this.#initCallback && this.#initCallback(this.#renderer);
+    }
   }
   getRendererElement() {
     return this.#renderer.domElement;
