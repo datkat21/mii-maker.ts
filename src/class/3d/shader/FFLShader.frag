@@ -1,4 +1,4 @@
-export default /*glsl*/`// https://jsfiddle.net/arian_/8gvynrdu/6/
+// https://jsfiddle.net/arian_/8gvynrdu/6/
 //
 //  定数定義ファイル
 //
@@ -268,4 +268,4 @@ void main()
 //#endif
 
     gl_FragColor = color;
-}`;
+}

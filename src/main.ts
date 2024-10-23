@@ -1,8 +1,7 @@
 import Mii from "./external/mii-js/mii";
 import { Buffer as Buf } from "../node_modules/buffer/index";
 import { setupUi } from "./ui/setup";
-import { MiiEditor } from "./class/MiiEditor";
-import { Library } from "./ui/pages/Library";
+import type { MiiEditor } from "./class/MiiEditor";
 
 declare global {
   interface Window {

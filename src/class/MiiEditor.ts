@@ -60,9 +60,6 @@ export enum RenderPart {
   Face,
 }
 
-let activeMii: Mii;
-export const getMii = () => activeMii;
-
 export class MiiEditor {
   mii: Mii;
   icons!: IconSet;
@@ -118,7 +115,6 @@ export class MiiEditor {
     this.renderingMode = RenderMode.ThreeJs;
 
     this.mii = new Mii(Buffer.from(initString, "base64") as unknown as Buffer);
-    activeMii = this.mii;
 
     // Ensure that birthPlatform doesn't cause issues.
     if (this.mii.deviceOrigin === 0) this.mii.deviceOrigin = 4;
@@ -242,7 +238,6 @@ export class MiiEditor {
           container: content,
           callback: (mii, forceRender, renderPart) => {
             this.mii = mii;
-            activeMii = mii;
             // use of forceRender forces reload of the head in 3D mode
             this.render(forceRender, renderPart);
             this.#updateCssVars();
@@ -353,12 +348,7 @@ export class MiiEditor {
         break;
     }
   }
-  #disableUI() {
-    this.ui.mii.qs("button")!.classOn("disabled");
-    this.ui.tabList.classOn("disabled");
-    this.ui.tabContent.classOn("disabled");
-  }
-  async shutdown(shouldSave: boolean = true) {
+  shutdown(shouldSave: boolean = true) {
     if (shouldSave) {
       if (Array.from(this.errors.values()).find((i) => i === true)) {
         let errorList = [];
@@ -371,17 +361,6 @@ export class MiiEditor {
             errorList.map((e) => `• ${e}`).join("\n")
         );
         return;
-      }
-
-      if (this.renderingMode === RenderMode.ThreeJs) {
-        await new Promise((resolve, reject) => {
-          this.#disableUI();
-          // Tell scene to change animation
-          this.ui.scene.playEndingAnimation();
-          setTimeout(() => {
-            resolve(null);
-          }, 1500);
-        });
       }
     }
 
