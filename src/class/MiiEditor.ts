@@ -124,16 +124,17 @@ export class MiiEditor {
     this.#setupUi();
   }
 
+  #loadInterval!: Timer;
   #loadSoundLoop() {
     const check = () => {
       if (this.ready) {
-        clearInterval(interval);
+        clearInterval(this.#loadInterval);
         return;
       }
       playSound("wait");
     };
     check();
-    let interval = setInterval(check, 2000);
+    this.#loadInterval = setInterval(check, 2000);
   }
 
   async #setupUi() {
@@ -361,6 +362,10 @@ export class MiiEditor {
         );
         return;
       }
+    }
+
+    if (this.#loadInterval) {
+      clearInterval(this.#loadInterval);
     }
 
     this.ui.base.classOn("closing");
