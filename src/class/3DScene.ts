@@ -351,8 +351,15 @@ export class Mii3DScene {
     // Ensure scaleFactors.y is clamped to a maximum of 1.0
     scaleFactors.y = Math.min(scaleFactors.y, 1.0);
 
-    function traverseBones(object: THREE.Object3D) {
-      // object.scale.set(scaleFactors.x, scaleFactors.y, scaleFactors.z);
+    const traverseBones = (object: THREE.Object3D) => {
+      object.scale.set(scaleFactors.x, scaleFactors.y, scaleFactors.z);
+      this.#scene
+        .getObjectByName("MiiHead")!
+        .scale.set(
+          0.12 / scaleFactors.x,
+          0.12 / scaleFactors.y,
+          0.12 / scaleFactors.z
+        );
       // object.traverse((o: THREE.Object3D) => {
       //   if ((o as THREE.Bone).isBone) {
       //     // attempt at porting some bone scaling code.. disabled for now
@@ -404,7 +411,7 @@ export class Mii3DScene {
       //     bone.scale.set(boneScale.x, boneScale.y, boneScale.z);
       //   }
       // });
-    }
+    };
 
     switch (this.mii.gender) {
       // m
@@ -484,7 +491,15 @@ export class Mii3DScene {
     return this.#scene;
   }
   fadeIn() {
-    this.getRendererElement().style.opacity = "1";
+    if (this.setupType === SetupType.Normal) {
+      this.getRendererElement().style.opacity = "0";
+      setTimeout(() => {
+        this.getRendererElement().style.opacity = "1";
+      }, 500);
+    } else {
+      // Screenshot mode only
+      this.getRendererElement().style.opacity = "1";
+    }
   }
   async updateMiiHead(renderPart: RenderPart = RenderPart.Head) {
     if (!this.ready) {
@@ -544,8 +559,8 @@ export class Mii3DScene {
         break;
     }
 
+    if (this.headReady === false) this.fadeIn();
     this.headReady = true;
-    this.fadeIn();
     await this.updateBody();
   }
   #traverseFFLShaderTest(model: THREE.Group<THREE.Object3DEventMap>) {

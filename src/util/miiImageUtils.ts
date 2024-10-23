@@ -5,7 +5,7 @@ import {
 } from "../external/mii-frontend/data-conversion.js";
 import { encryptAndEncodeVer3StoreDataToQRCodeFormat } from "./EncodeQRCode.js";
 import Mii from "../external/mii-js/mii.js";
-import { Buffer as Buf } from "../../node_modules/buffer/index.js";
+import { Buffer as Buf } from "../../node_modules/buffer/index";
 import { Config } from "../config.js";
 import { CameraPosition, Mii3DScene, SetupType } from "../class/3DScene.js";
 import Html from "@datkat21/html";

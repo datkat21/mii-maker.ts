@@ -7,7 +7,7 @@ import Mii from "../../external/mii-js/mii";
 import { Buffer } from "../../../node_modules/buffer/index";
 import Loader from "../components/Loader";
 import { AddButtonSounds } from "../../util/AddButtonSounds";
-import { QRCodeCanvas } from "../../util/miiQrImage";
+import { getMiiRender, QRCodeCanvas } from "../../util/miiImageUtils";
 import { Link } from "../components/Link";
 import { Config } from "../../config";
 import EditorIcons from "../../constants/EditorIcons";
@@ -421,7 +421,7 @@ const miiExport = (mii: MiiLocalforage, miiData: Mii) => {
       text: "Generate QR code",
       async callback() {
         const qrCodeImage = await QRCodeCanvas(mii.mii);
-        const m = Modal.modal("QR Code", "", "body", {
+        const m = Modal.modal(`QR Code: ${miiData.miiName}`, "", "body", {
           text: "Cancel",
           callback() {},
         });
@@ -429,6 +429,23 @@ const miiExport = (mii: MiiLocalforage, miiData: Mii) => {
           .clear()
           .style({ padding: "0" })
           .prepend(new Html("img").attr({ src: qrCodeImage }));
+      },
+    },
+    {
+      text: "Render an image",
+      async callback() {
+        const renderImage = await getMiiRender(miiData);
+        renderImage.style.width = "100%";
+        renderImage.style.height = "100%";
+        renderImage.style.objectFit = "contain";
+        const m = Modal.modal(`Render: ${miiData.miiName}`, "", "body", {
+          text: "Cancel",
+          callback() {},
+        });
+        m.qs(".modal-body")!
+          .clear()
+          .style({ padding: "0" })
+          .prepend(renderImage);
       },
     },
     {
