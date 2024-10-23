@@ -26,10 +26,6 @@ export enum CameraPosition {
   MiiHead,
   MiiFullBody,
 }
-export enum SetupType {
-  Normal,
-  Screenshot,
-}
 
 export class Mii3DScene {
   #camera: THREE.PerspectiveCamera;
@@ -45,14 +41,7 @@ export class Mii3DScene {
   mixer!: THREE.AnimationMixer;
   animators: Map<string, (n: number, f: number) => any>;
   animations: Map<string, THREE.AnimationClip>;
-  setupType: SetupType;
-  #initCallback?: (renderer: THREE.WebGLRenderer) => any;
-  constructor(
-    mii: Mii,
-    parent: HTMLElement,
-    setupType: SetupType = SetupType.Normal,
-    initCallback?: (renderer: THREE.WebGLRenderer) => any
-  ) {
+  constructor(mii: Mii, parent: HTMLElement) {
     this.animations = new Map();
     this.animators = new Map();
     this.#parent = parent;
@@ -67,7 +56,6 @@ export class Mii3DScene {
     this.#camera.rotation.set(0, Math.PI, 0);
     this.ready = false;
     this.headReady = false;
-    if (initCallback) this.#initCallback = initCallback;
 
     const cubeTextureLoader = new THREE.CubeTextureLoader();
     cubeTextureLoader
@@ -106,16 +94,7 @@ export class Mii3DScene {
     // ambientLight.visible = false;
     this.#scene.add(ambientLight);
 
-    if (setupType === SetupType.Screenshot) {
-      this.#renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        preserveDrawingBuffer: true,
-      });
-    } else {
-      this.#renderer = new THREE.WebGLRenderer({ antialias: true });
-    }
-    this.setupType = setupType;
-
+    this.#renderer = new THREE.WebGLRenderer({ antialias: true });
     this.#renderer.setSize(512, 512);
     // this.#renderer.setPixelRatio(window.devicePixelRatio * 0.1);
 
@@ -132,12 +111,6 @@ export class Mii3DScene {
     this.#controls.maxDistance = 35;
     this.#controls.minAzimuthAngle = -Math.PI;
     this.#controls.maxAzimuthAngle = Math.PI;
-
-    if (setupType === SetupType.Screenshot) {
-      this.#controls.moveTo(0, 1.5, 0);
-      this.#controls.dollyTo(40);
-      this.#camera.fov = 30;
-    }
 
     // this.#controls.maxTargetRadius = 10;
     // this.#controls.enableDamping = true;
@@ -212,9 +185,6 @@ export class Mii3DScene {
     await this.#addBody();
     await this.updateMiiHead();
     this.ready = true;
-    if (this.setupType === SetupType.Screenshot) {
-      this.#initCallback && this.#initCallback(this.#renderer);
-    }
   }
   getRendererElement() {
     return this.#renderer.domElement;
@@ -322,68 +292,6 @@ export class Mii3DScene {
     // Ensure scaleFactors.y is clamped to a maximum of 1.0
     scaleFactors.y = Math.min(scaleFactors.y, 1.0);
 
-    const traverseBones = (object: THREE.Object3D) => {
-      object.scale.set(scaleFactors.x, scaleFactors.y, scaleFactors.z);
-      this.#scene
-        .getObjectByName("MiiHead")!
-        .scale.set(
-          0.12 / scaleFactors.x,
-          0.12 / scaleFactors.y,
-          0.12 / scaleFactors.z
-        );
-      // object.traverse((o: THREE.Object3D) => {
-      //   if ((o as THREE.Bone).isBone) {
-      //     // attempt at porting some bone scaling code.. disabled for now
-      //     const bone = o as THREE.Bone;
-      //     if (bone.name === "head") return;
-      //     let boneScale = { x: 1, y: 1, z: 1 };
-      //     switch (bone.name) {
-      //       default:
-      //         break;
-      //       // case "chest":
-      //       // case "chest_2":
-      //       // case "hip":
-      //       // case "foot_l1":
-      //       // case "foot_l2":
-      //       // case "foot_r1":
-      //       // case "foot_r2":
-      //       //   boneScale.x = scaleFactors.x;
-      //       //   boneScale.y = scaleFactors.y;
-      //       //   boneScale.z = scaleFactors.z;
-      //       //   break;
-      //       // case "arm_l1":
-      //       // case "arm_l2":
-      //       // case "elbow_l":
-      //       // case "arm_r1":
-      //       // case "arm_r2":
-      //       // case "elbow_r":
-      //       //   boneScale.x = scaleFactors.y;
-      //       //   boneScale.y = scaleFactors.x;
-      //       //   boneScale.z = scaleFactors.z;
-      //       //   break;
-      //       // case "wrist_l":
-      //       // case "shoulder_l":
-      //       // case "wrist_r":
-      //       // case "shoulder_r":
-      //       // case "ankle_l":
-      //       // case "knee_l":
-      //       // case "ankle_r":
-      //       // case "knee_r":
-      //       //   boneScale.x = scaleFactors.x;
-      //       //   boneScale.y = scaleFactors.x;
-      //       //   boneScale.z = scaleFactors.x;
-      //       //   break;
-      //       // case "head":
-      //       //   boneScale.x = scaleFactors.x;
-      //       //   boneScale.y = Math.min(scaleFactors.y, 1.0);
-      //       //   boneScale.z = scaleFactors.z;
-      //       //   break;
-      //     }
-      //     bone.scale.set(boneScale.x, boneScale.y, boneScale.z);
-      //   }
-      // });
-    };
-
     switch (this.mii.gender) {
       // m
       case 0:
@@ -431,15 +339,7 @@ export class Mii3DScene {
     return this.#scene;
   }
   fadeIn() {
-    if (this.setupType === SetupType.Normal) {
-      this.getRendererElement().style.opacity = "0";
-      setTimeout(() => {
-        this.getRendererElement().style.opacity = "1";
-      }, 500);
-    } else {
-      // Screenshot mode only
-      this.getRendererElement().style.opacity = "1";
-    }
+    this.getRendererElement().style.opacity = "1";
   }
   async updateMiiHead(renderPart: RenderPart = RenderPart.Head) {
     if (!this.ready) {
@@ -543,9 +443,9 @@ export class Mii3DScene {
         break;
     }
 
-    if (this.headReady === false) this.fadeIn();
     this.headReady = true;
-    await this.updateBody();
+    this.fadeIn();
+    this.updateBody();
   }
   #traverseFFLShaderTest(model: THREE.Group<THREE.Object3DEventMap>) {
     // Traverse the model to access its meshes
