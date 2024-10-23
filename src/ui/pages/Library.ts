@@ -7,20 +7,17 @@ import Mii from "../../external/mii-js/mii";
 import { Buffer } from "../../../node_modules/buffer/index";
 import Loader from "../components/Loader";
 import { AddButtonSounds } from "../../util/AddButtonSounds";
-import { getMiiRender, QRCodeCanvas } from "../../util/miiImageUtils";
+import { QRCodeCanvas } from "../../util/miiQrImage";
 import { Link } from "../components/Link";
 import { Config } from "../../config";
-import EditorIcons from "../../constants/EditorIcons";
 export const savedMiiCount = async () =>
   (await localforage.keys()).filter((k) => k.startsWith("mii-")).length;
 export const newMiiId = async () =>
   `mii-${await savedMiiCount()}-${Date.now()}`;
-export const miiIconUrl = (data: string, expression?: number) =>
+export const miiIconUrl = (data: string) =>
   `${Config.renderer.renderHeadshotURLNoParams}?data=${encodeURIComponent(
     data
-  )}&shaderType=0&type=face&width=180&verifyCharInfo=0${
-    expression ? `&expression=${expression}` : ""
-  }`;
+  )}&shaderType=0&type=face&width=180&verifyCharInfo=0`;
 
 export async function Library(highlightMiiId?: string) {
   function shutdown(): Promise<void> {
@@ -67,6 +64,8 @@ export async function Library(highlightMiiId?: string) {
 
     const miiData = new Mii(Buffer.from(mii.mii, "base64"));
 
+    miiContainer.on("click", miiEdit(mii, shutdown, miiData));
+
     try {
       // prevent error when importing converted Wii-era data
       miiData.unknown1 = 0;
@@ -78,37 +77,6 @@ export async function Library(highlightMiiId?: string) {
         src: miiIconUrl(mii.mii),
       });
       let miiName = new Html("span").text(miiData.miiName);
-
-      let hasMiiLoaded = false;
-
-      let miiEditCallback = miiEdit(mii, shutdown, miiData);
-
-      miiContainer.on("click", async () => {
-        if (hasMiiLoaded === false || hasMiiErrored === true) {
-          let result = await Modal.prompt(
-            "Oops",
-            "This Mii hasn't loaded correctly. Do you still want to try and manage it?"
-          );
-          if (result === false) return;
-        }
-
-        miiEditCallback();
-      });
-
-      let hasMiiErrored = false;
-
-      miiImage
-        .on("load", () => {
-          hasMiiLoaded = true;
-        })
-        .on("error", () => {
-          // prevent looping error load
-          if (hasMiiErrored === true) return;
-          miiImage.attr({
-            src: "data:image/svg+xml," + encodeURIComponent(EditorIcons.error),
-          });
-          hasMiiErrored = true;
-        });
 
       miiContainer.appendMany(miiImage, miiName).appendTo(libraryList);
 
@@ -361,34 +329,18 @@ const miiEdit = (mii: MiiLocalforage, shutdown: () => any, miiData: Mii) => {
       {
         text: "Delete",
         async callback() {
-          let tmpDeleteModal = await Modal.modal(
-            "Warning",
-            "Are you sure you want to delete this Mii?",
-            "body",
-            {
-              async callback(e) {
-                await localforage.removeItem(mii.id);
-                await shutdown();
-                Library();
-              },
-              text: "Yes",
-              type: "danger",
-            },
-            {
-              callback(e) {
-                /* ... */
-              },
-              text: "No",
-            }
-          );
-
-          modal
-            .qs(".modal-body")
-            ?.prepend(
-              new Html("img")
-                .attr({ src: miiIconUrl(mii.mii) })
-                .style({ width: "180px", margin: "-18px auto 0 auto" })
-            );
+          if (
+            await Modal.prompt(
+              "Warning",
+              "Are you sure you want to delete this Mii?",
+              "body",
+              true
+            )
+          ) {
+            await localforage.removeItem(mii.id);
+            await shutdown();
+            Library();
+          }
         },
       },
       {
@@ -421,7 +373,7 @@ const miiExport = (mii: MiiLocalforage, miiData: Mii) => {
       text: "Generate QR code",
       async callback() {
         const qrCodeImage = await QRCodeCanvas(mii.mii);
-        const m = Modal.modal(`QR Code: ${miiData.miiName}`, "", "body", {
+        const m = Modal.modal("QR Code", "", "body", {
           text: "Cancel",
           callback() {},
         });
@@ -429,23 +381,6 @@ const miiExport = (mii: MiiLocalforage, miiData: Mii) => {
           .clear()
           .style({ padding: "0" })
           .prepend(new Html("img").attr({ src: qrCodeImage }));
-      },
-    },
-    {
-      text: "Render an image",
-      async callback() {
-        const renderImage = await getMiiRender(miiData);
-        renderImage.style.width = "100%";
-        renderImage.style.height = "100%";
-        renderImage.style.objectFit = "contain";
-        const m = Modal.modal(`Render: ${miiData.miiName}`, "", "body", {
-          text: "Cancel",
-          callback() {},
-        });
-        m.qs(".modal-body")!
-          .clear()
-          .style({ padding: "0" })
-          .prepend(renderImage);
       },
     },
     {
