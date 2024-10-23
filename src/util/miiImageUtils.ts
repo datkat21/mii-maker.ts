@@ -5,8 +5,10 @@ import {
 } from "../external/mii-frontend/data-conversion.js";
 import { encryptAndEncodeVer3StoreDataToQRCodeFormat } from "./EncodeQRCode.js";
 import Mii from "../external/mii-js/mii.js";
-import { Buffer as Buf } from "../../node_modules/buffer/index.js";
+import { Buffer as Buf } from "../../node_modules/buffer/index";
 import { Config } from "../config.js";
+import { CameraPosition, Mii3DScene, SetupType } from "../class/3DScene.js";
+import Html from "@datkat21/html";
 
 const ver3Format = supportedFormats.find(
   (f) => f.className === "Gen2Wiiu3dsMiitomo"
@@ -39,21 +41,52 @@ const makeQrCodeImage = async (mii: string): Promise<HTMLImageElement> => {
   });
 };
 
-export const getMiiRender = async (mii: string): Promise<HTMLImageElement> => {
-  const blob = await (
-    await fetch(
-      `${Config.renderer.renderHeadshotURLNoParams}?data=${encodeURIComponent(
-        mii
-      )}&shaderType=0&type=face&width=720&verifyCharInfo=0`
-    )
-  ).blob();
-  const img = new Image(720, 720);
-  img.src = URL.createObjectURL(blob);
-  return new Promise((resolve) => {
-    img.onload = () => {
-      return resolve(img);
-    };
+export const getMiiRender = async (mii: Mii): Promise<HTMLImageElement> => {
+  return new Promise((resolve, reject) => {
+    let parent = new Html("div")
+      .style({ width: "720px", height: "720px", opacity: "0.1" })
+      .appendTo("body");
+    const scene = new Mii3DScene(
+      mii,
+      parent.elm,
+      SetupType.Screenshot,
+      (renderer) => {
+        requestAnimationFrame(() => {
+          const imgUrl = renderer.domElement.toBlob((blob) => {
+            const image = new Image(
+              renderer.domElement.width,
+              renderer.domElement.height
+            );
+            image.src = URL.createObjectURL(blob!);
+            console.log("Temporary render URL:", image.src);
+            image.onload = () => {
+              resolve(image);
+              scene.shutdown();
+              parent.cleanup();
+            };
+          });
+        });
+      }
+    );
+    scene.init().then(() => {
+      scene.updateBody();
+      parent.append(scene.getRendererElement());
+    });
   });
+  // const blob = await (
+  //   await fetch(
+  //     `${Config.renderer.renderHeadshotURLNoParams}?data=${encodeURIComponent(
+  //       mii
+  //     )}&shaderType=0&type=face&width=720&verifyCharInfo=0`
+  //   )
+  // ).blob();
+  // const img = new Image(720, 720);
+  // img.src = URL.createObjectURL(blob);
+  // return new Promise((resolve) => {
+  //   img.onload = () => {
+  //     return resolve(img);
+  //   };
+  // });
 };
 
 export const getBackground = async (): Promise<HTMLImageElement> => {
@@ -68,9 +101,9 @@ export const getBackground = async (): Promise<HTMLImageElement> => {
 };
 
 export const QRCodeCanvas = async (mii: string) => {
-  const render = await getMiiRender(mii);
-  const qrCodeSource = await makeQrCodeImage(mii);
   const miiData = new Mii(Buf.from(mii, "base64"));
+  const render = await getMiiRender(miiData);
+  const qrCodeSource = await makeQrCodeImage(mii);
   const background = await getBackground();
 
   const canvas = document.createElement("canvas");
