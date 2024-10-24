@@ -28,6 +28,10 @@ export enum CameraPosition {
   MiiHead,
   MiiFullBody,
 }
+export enum SetupType {
+  Normal,
+  Screenshot,
+}
 
 export class Mii3DScene {
   #camera: THREE.PerspectiveCamera;
@@ -43,7 +47,14 @@ export class Mii3DScene {
   mixer!: THREE.AnimationMixer;
   animators: Map<string, (n: number, f: number) => any>;
   animations: Map<string, THREE.AnimationClip>;
-  constructor(mii: Mii, parent: HTMLElement) {
+  setupType: SetupType;
+  #initCallback?: (renderer: THREE.WebGLRenderer) => any;
+  constructor(
+    mii: Mii,
+    parent: HTMLElement,
+    setupType: SetupType = SetupType.Normal,
+    initCallback?: (renderer: THREE.WebGLRenderer) => any
+  ) {
     this.animations = new Map();
     this.animators = new Map();
     this.#parent = parent;
@@ -58,6 +69,7 @@ export class Mii3DScene {
     // this.#camera.rotation.set(0, Math.PI, 0);
     this.ready = false;
     this.headReady = false;
+    if (initCallback) this.#initCallback = initCallback;
 
     const cubeTextureLoader = new THREE.CubeTextureLoader();
     cubeTextureLoader
@@ -96,7 +108,16 @@ export class Mii3DScene {
     // ambientLight.visible = false;
     this.#scene.add(ambientLight);
 
-    this.#renderer = new THREE.WebGLRenderer({ antialias: true });
+    if (setupType === SetupType.Screenshot) {
+      this.#renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        preserveDrawingBuffer: true,
+      });
+    } else {
+      this.#renderer = new THREE.WebGLRenderer({ antialias: true });
+    }
+    this.setupType = setupType;
+
     this.#renderer.setSize(512, 512);
     // this.#renderer.setPixelRatio(window.devicePixelRatio * 0.1);
 
@@ -113,6 +134,12 @@ export class Mii3DScene {
     this.#controls.maxDistance = 35;
     this.#controls.minAzimuthAngle = -Math.PI;
     this.#controls.maxAzimuthAngle = Math.PI;
+
+    if (setupType === SetupType.Screenshot) {
+      this.#controls.moveTo(0, 1.5, 0);
+      this.#controls.dollyTo(40);
+      this.#camera.fov = 30;
+    }
 
     // this.#controls.maxTargetRadius = 10;
     // this.#controls.enableDamping = true;
@@ -195,6 +222,9 @@ export class Mii3DScene {
     await this.#addBody();
     await this.updateMiiHead();
     this.ready = true;
+    if (this.setupType === SetupType.Screenshot) {
+      this.#initCallback && this.#initCallback(this.#renderer);
+    }
   }
   getRendererElement() {
     return this.#renderer.domElement;
@@ -321,8 +351,15 @@ export class Mii3DScene {
     // Ensure scaleFactors.y is clamped to a maximum of 1.0
     scaleFactors.y = Math.min(scaleFactors.y, 1.0);
 
-    function traverseBones(object: THREE.Object3D) {
-      // object.scale.set(scaleFactors.x, scaleFactors.y, scaleFactors.z);
+    const traverseBones = (object: THREE.Object3D) => {
+      object.scale.set(scaleFactors.x, scaleFactors.y, scaleFactors.z);
+      this.#scene
+        .getObjectByName("MiiHead")!
+        .scale.set(
+          0.12 / scaleFactors.x,
+          0.12 / scaleFactors.y,
+          0.12 / scaleFactors.z
+        );
       // object.traverse((o: THREE.Object3D) => {
       //   if ((o as THREE.Bone).isBone) {
       //     // attempt at porting some bone scaling code.. disabled for now
@@ -374,7 +411,7 @@ export class Mii3DScene {
       //     bone.scale.set(boneScale.x, boneScale.y, boneScale.z);
       //   }
       // });
-    }
+    };
 
     switch (this.mii.gender) {
       // m
@@ -454,7 +491,15 @@ export class Mii3DScene {
     return this.#scene;
   }
   fadeIn() {
-    this.getRendererElement().style.opacity = "1";
+    if (this.setupType === SetupType.Normal) {
+      this.getRendererElement().style.opacity = "0";
+      setTimeout(() => {
+        this.getRendererElement().style.opacity = "1";
+      }, 500);
+    } else {
+      // Screenshot mode only
+      this.getRendererElement().style.opacity = "1";
+    }
   }
   async updateMiiHead(renderPart: RenderPart = RenderPart.Head) {
     if (!this.ready) {
@@ -514,9 +559,9 @@ export class Mii3DScene {
         break;
     }
 
+    if (this.headReady === false) this.fadeIn();
     this.headReady = true;
-    this.fadeIn();
-    this.updateBody();
+    await this.updateBody();
   }
   #traverseFFLShaderTest(model: THREE.Group<THREE.Object3DEventMap>) {
     // Traverse the model to access its meshes
