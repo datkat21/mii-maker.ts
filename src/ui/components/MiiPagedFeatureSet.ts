@@ -4,9 +4,11 @@ import { TabList, TabListType, type Tab } from "./TabList";
 import md5 from "md5";
 import { playSound } from "../../class/audio/SoundManager";
 import type { RenderPart } from "../../class/MiiEditor";
+import { Input } from "./Input";
 
 export enum FeatureSetType {
   Icon,
+  Text,
   Range,
   Slider,
   Switch,
@@ -18,6 +20,14 @@ export interface FeatureSetIconItem {
   icon?: string;
   color?: string;
   value: number;
+  forceRender?: boolean;
+}
+export interface FeatureSetTextItem {
+  type: FeatureSetType.Text;
+  part: RenderPart;
+  property: string;
+  label: string;
+  sound?: string;
   forceRender?: boolean;
 }
 export interface FeatureSetRangeItem {
@@ -58,6 +68,7 @@ export interface FeatureSetSwitchItem {
 
 export type FeatureSetItem =
   | FeatureSetIconItem
+  | FeatureSetTextItem
   | FeatureSetRangeItem
   | FeatureSetSwitchItem
   | FeatureSetSliderItem;
@@ -68,6 +79,7 @@ export interface FeatureSetEntry {
 
 export interface FeatureSet {
   mii?: any;
+  miiIsNotMii?: boolean;
   onChange: (mii: Mii, forceRender: boolean, part: RenderPart) => void;
   entries: Record<string, FeatureSetEntry>;
   // pages: FeatureSetPage[];
@@ -77,7 +89,10 @@ export const playHoverSound = () => playSound("hover");
 
 export function MiiPagedFeatureSet(set: FeatureSet) {
   let tmpMii: Mii | any;
-  if (set.mii) tmpMii = new Mii(set.mii.encode());
+  if (set.mii)
+    if (set.miiIsNotMii === undefined || set.miiIsNotMii === false)
+      tmpMii = new Mii(set.mii.encode());
+    else tmpMii = set.mii;
   else tmpMii = {};
 
   let setContainer = new Html("div").class("feature-set-container");

@@ -1,6 +1,6 @@
 import Html from "@datkat21/html";
 import localforage from "localforage";
-import { MiiEditor, MiiGender } from "../../class/MiiEditor";
+import { MiiEditor, MiiGender, RenderPart } from "../../class/MiiEditor";
 import { MainMenu } from "./MainMenu";
 import Modal from "../components/Modal";
 import Mii from "../../external/mii-js/mii";
@@ -11,6 +11,12 @@ import { getMiiRender, QRCodeCanvas } from "../../util/miiImageUtils";
 import { Link } from "../components/Link";
 import { Config } from "../../config";
 import EditorIcons from "../../constants/EditorIcons";
+import { Mii3DScene, SetupType } from "../../class/3DScene";
+import {
+  FeatureSetType,
+  MiiPagedFeatureSet,
+} from "../components/MiiPagedFeatureSet";
+import { downloadLink } from "../../util/downloadLink";
 export const savedMiiCount = async () =>
   (await localforage.keys()).filter((k) => k.startsWith("mii-")).length;
 export const newMiiId = async () =>
@@ -434,18 +440,7 @@ const miiExport = (mii: MiiLocalforage, miiData: Mii) => {
     {
       text: "Render an image",
       async callback() {
-        const renderImage = await getMiiRender(miiData);
-        renderImage.style.width = "100%";
-        renderImage.style.height = "100%";
-        renderImage.style.objectFit = "contain";
-        const m = Modal.modal(`Render: ${miiData.miiName}`, "", "body", {
-          text: "Cancel",
-          callback() {},
-        });
-        m.qs(".modal-body")!
-          .clear()
-          .style({ padding: "0" })
-          .prepend(renderImage);
+        miiExportRender(miiData);
       },
     },
     {
@@ -480,6 +475,161 @@ const miiExport = (mii: MiiLocalforage, miiData: Mii) => {
     {
       text: "Cancel",
       async callback() {},
+    }
+  );
+};
+
+const miiExportRender = async (miiData: Mii) => {
+  Modal.modal(
+    `Render options: ${miiData.miiName}`,
+    "Choose a way to render this Mii",
+    "body",
+    {
+      text: "Default render",
+      async callback() {
+        const renderImage = await getMiiRender(miiData);
+        renderImage.style.width = "100%";
+        renderImage.style.height = "100%";
+        renderImage.style.objectFit = "contain";
+        const m = Modal.modal(`Render: ${miiData.miiName}`, "", "body", {
+          text: "Cancel",
+          callback() {},
+        });
+        m.qs(".modal-body")!
+          .clear()
+          .style({ padding: "0" })
+          .prepend(renderImage);
+      },
+    },
+    {
+      text: "Custom render",
+      async callback() {
+        const modal = Modal.modal("Prepare Render", "", "body", {
+          callback: () => {},
+          text: "Cancel",
+        });
+        const body = modal
+          .qs(".modal-body")!
+          .classOn("responsive-row-lg")
+          .clear();
+        modal.qs(".modal-content")!.styleJs({
+          width: "100%",
+          height: "100%",
+          maxWidth: "100%",
+          maxHeight: "100%",
+        });
+        let parent = new Html("div")
+          .style({
+            display: "flex",
+            flex: "1",
+            background: "var(--container)",
+            "border-radius": "12px",
+            "flex-shrink": "1",
+            height: "100%",
+            overflow: "hidden",
+            "align-items": "center",
+          })
+          .appendTo(body);
+        let tabsContent = new Html("div").classOn("tab-content").appendTo(body);
+
+        let configuration = { fov: 30, renderWidth: 720, renderHeight: 720 };
+
+        // very hacky way to use feature set to create tabs
+        MiiPagedFeatureSet({
+          mii: configuration,
+          miiIsNotMii: true,
+          entries: {
+            page1: {
+              label: "Camera",
+              items: [
+                {
+                  type: FeatureSetType.Slider,
+                  property: "fov",
+                  iconStart: "FOV",
+                  iconEnd: "",
+                  min: 20,
+                  max: 70,
+                  part: RenderPart.Face,
+                },
+              ],
+            },
+            // WIP page 2
+            // page2: {
+            //   label: "Render",
+            //   items: [
+            //     {
+            //       type: FeatureSetType.Text,
+            //       property: "renderWidth",
+            //       part: RenderPart.Face,
+            //       label: "Width",
+            //     },
+            //     {
+            //       type: FeatureSetType.Text,
+            //       property: "renderHeight",
+            //       part: RenderPart.Face,
+            //       label: "Height",
+            //     },
+            //   ],
+            // },
+          },
+          onChange(mii, forceRender, part) {
+            configuration = mii as any;
+            updateConfiguration();
+          },
+        }).appendTo(tabsContent);
+
+        new Html("button")
+          .text("Download")
+          .on("click", finalizeRender)
+          .appendTo(tabsContent);
+
+        window.addEventListener("resize", () => {
+          scene.resize();
+        });
+
+        const scene = new Mii3DScene(
+          miiData,
+          parent.elm,
+          SetupType.Screenshot,
+          (renderer) => {}
+        );
+
+        function updateConfiguration() {
+          scene.getCamera().fov = configuration.fov;
+          scene.getCamera().updateProjectionMatrix();
+        }
+
+        //@ts-expect-error
+        window.scene = scene;
+
+        scene.init().then(() => {
+          scene.updateBody();
+          parent.append(scene.getRendererElement());
+        });
+
+        const rendererElm = scene.getRendererElement();
+
+        function finalizeRender() {
+          rendererElm.toBlob((blob) => {
+            const image = new Image(rendererElm.width, rendererElm.height);
+            image.src = URL.createObjectURL(blob!);
+            console.log("Temporary render URL:", image.src);
+            image.onload = () => {
+              downloadLink(
+                image.src,
+                `${miiData.miiName}_${new Date().toJSON()}`
+              );
+              scene.shutdown();
+              parent.cleanup();
+              modal.qs("button")?.elm.click();
+            };
+          });
+        }
+      },
+    },
+    {
+      text: "Cancel",
+      callback() {},
     }
   );
 };

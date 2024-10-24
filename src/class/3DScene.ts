@@ -127,13 +127,15 @@ export class Mii3DScene {
       this.#camera,
       this.#renderer.domElement
     );
-    this.#controls.mouseButtons.left = CameraControls.ACTION.ROTATE;
-    this.#controls.mouseButtons.right = CameraControls.ACTION.NONE;
-    this.#controls.mouseButtons.wheel = CameraControls.ACTION.DOLLY;
-    this.#controls.minDistance = 8;
-    this.#controls.maxDistance = 35;
-    this.#controls.minAzimuthAngle = -Math.PI;
-    this.#controls.maxAzimuthAngle = Math.PI;
+    if (setupType === SetupType.Normal) {
+      this.#controls.mouseButtons.left = CameraControls.ACTION.ROTATE;
+      this.#controls.mouseButtons.right = CameraControls.ACTION.NONE;
+      this.#controls.mouseButtons.wheel = CameraControls.ACTION.DOLLY;
+      this.#controls.minDistance = 8;
+      this.#controls.maxDistance = 35;
+      this.#controls.minAzimuthAngle = -Math.PI;
+      this.#controls.maxAzimuthAngle = Math.PI;
+    }
 
     if (setupType === SetupType.Screenshot) {
       this.#controls.moveTo(0, 1.5, 0);
@@ -524,25 +526,29 @@ export class Mii3DScene {
             });
           });
         }
-        const GLB = await this.#gltfLoader.loadAsync(
-          this.mii.studioUrl({
-            ext: "glb",
-          } as unknown as any)
-        );
+        try {
+          const GLB = await this.#gltfLoader.loadAsync(
+            this.mii.studioUrl({
+              ext: "glb",
+            } as unknown as any)
+          );
 
-        GLB.scene.name = "MiiHead";
-        GLB.scene.rotation.set(-Math.PI / 2, 0, 0);
-        // GLB.scene.rotation.set(Math.PI / 2, 0, 0);
-        GLB.scene.scale.set(0.12, 0.12, 0.12);
+          GLB.scene.name = "MiiHead";
+          GLB.scene.rotation.set(-Math.PI / 2, 0, 0);
+          // GLB.scene.rotation.set(Math.PI / 2, 0, 0);
+          GLB.scene.scale.set(0.12, 0.12, 0.12);
 
-        // enable shader on head
-        this.#scene.remove(...head);
-        // hack to force remove head anyways
-        this.#scene.getObjectsByProperty("name", "MiiHead").forEach((obj) => {
-          obj.parent!.remove(obj);
-        });
-        this.#traverseFFLShaderTest(GLB.scene);
-        this.#scene.add(GLB.scene);
+          // enable shader on head
+          this.#scene.remove(...head);
+          // hack to force remove head anyways
+          this.#scene.getObjectsByProperty("name", "MiiHead").forEach((obj) => {
+            obj.parent!.remove(obj);
+          });
+          this.#traverseFFLShaderTest(GLB.scene);
+          this.#scene.add(GLB.scene);
+        } catch (e) {
+          console.error(e);
+        }
         break;
       case RenderPart.Face:
         if (head.length > 0) {
@@ -760,6 +766,11 @@ export class Mii3DScene {
         }
       }
     });
+  }
+
+  // screenshot mode helper utils
+  getCamera() {
+    return this.#camera;
   }
 
   shutdown() {

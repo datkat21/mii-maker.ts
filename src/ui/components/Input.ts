@@ -11,16 +11,18 @@ export function Input(
   let id = String(performance.now());
 
   function checkValidity(value: any) {
-    if (editor) editor.dirty = true;
-    if (validate)
-      if (validate(value)) {
-        input.classOff("invalid");
-        callback(value);
-        if (editor) editor.errors.set(label, false);
-      } else {
-        input.classOn("invalid");
-        if (editor) editor.errors.set(label, true);
-      }
+    if (editor) {
+      editor.dirty = true;
+      if (validate)
+        if (validate(value)) {
+          input.classOff("invalid");
+          callback(value);
+          if (editor) editor.errors.set(label, false);
+        } else {
+          input.classOn("invalid");
+          if (editor) editor.errors.set(label, true);
+        }
+    }
   }
   let input: Html = new Html("input")
     .id(id)
